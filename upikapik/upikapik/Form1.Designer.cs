@@ -33,7 +33,7 @@
             this.btnPlay = new System.Windows.Forms.Button();
             this.btnOpen = new System.Windows.Forms.Button();
             this.listPlay = new System.Windows.Forms.ListBox();
-            this.label1 = new System.Windows.Forms.Label();
+            this.lblStatus = new System.Windows.Forms.Label();
             this.lytMonitor = new System.Windows.Forms.TableLayoutPanel();
             this.barProgress = new System.Windows.Forms.ProgressBar();
             this.barSeek = new System.Windows.Forms.TrackBar();
@@ -49,7 +49,7 @@
             this.lytMain.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.lytMain.Controls.Add(this.lytFlow, 0, 1);
             this.lytMain.Controls.Add(this.listPlay, 0, 2);
-            this.lytMain.Controls.Add(this.label1, 0, 3);
+            this.lytMain.Controls.Add(this.lblStatus, 0, 3);
             this.lytMain.Controls.Add(this.lytMonitor, 0, 0);
             this.lytMain.Dock = System.Windows.Forms.DockStyle.Fill;
             this.lytMain.Location = new System.Drawing.Point(0, 0);
@@ -81,6 +81,7 @@
             this.btnPlay.TabIndex = 0;
             this.btnPlay.Text = "Play/Pause";
             this.btnPlay.UseVisualStyleBackColor = true;
+            this.btnPlay.Click += new System.EventHandler(this.btnPlay_Click);
             // 
             // btnOpen
             // 
@@ -90,6 +91,7 @@
             this.btnOpen.TabIndex = 1;
             this.btnOpen.Text = "Open";
             this.btnOpen.UseVisualStyleBackColor = true;
+            this.btnOpen.Click += new System.EventHandler(this.btnOpen_Click);
             // 
             // listPlay
             // 
@@ -99,16 +101,17 @@
             this.listPlay.Name = "listPlay";
             this.listPlay.Size = new System.Drawing.Size(286, 163);
             this.listPlay.TabIndex = 1;
+            this.listPlay.DoubleClick += new System.EventHandler(this.listPlay_DoubleClick);
             // 
-            // label1
+            // lblStatus
             // 
-            this.label1.AutoSize = true;
-            this.label1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.label1.Location = new System.Drawing.Point(3, 271);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(286, 20);
-            this.label1.TabIndex = 2;
-            this.label1.Text = "Not Playing";
+            this.lblStatus.AutoSize = true;
+            this.lblStatus.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.lblStatus.Location = new System.Drawing.Point(3, 271);
+            this.lblStatus.Name = "lblStatus";
+            this.lblStatus.Size = new System.Drawing.Size(286, 20);
+            this.lblStatus.TabIndex = 2;
+            this.lblStatus.Text = "Not Playing";
             // 
             // lytMonitor
             // 
@@ -142,6 +145,7 @@
             this.barSeek.Size = new System.Drawing.Size(280, 19);
             this.barSeek.TabIndex = 1;
             this.barSeek.TickStyle = System.Windows.Forms.TickStyle.None;
+            this.barSeek.Scroll += new System.EventHandler(this.barSeek_Scroll);
             // 
             // Form1
             // 
@@ -169,7 +173,7 @@
         private System.Windows.Forms.Button btnPlay;
         private System.Windows.Forms.Button btnOpen;
         private System.Windows.Forms.ListBox listPlay;
-        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Label lblStatus;
         private System.Windows.Forms.TableLayoutPanel lytMonitor;
         private System.Windows.Forms.ProgressBar barProgress;
         private System.Windows.Forms.TrackBar barSeek;

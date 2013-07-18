@@ -19,7 +19,6 @@ namespace upikapik
         private long streamLen; // stream size in byte
         private long streamPos; // stream position in byte
         private string path;
-        private string filename;
         private System.Timers.Timer mainTime;
 
         /*
@@ -105,6 +104,13 @@ namespace upikapik
         public void play(string path)
         {
             this.setPath(path);
+            BASSActive status;
+            status = Bass.BASS_ChannelIsActive(stream);
+
+            if (status == BASSActive.BASS_ACTIVE_PLAYING)
+            {
+                Bass.BASS_StreamFree(stream);
+            }
             if ((stream = Bass.BASS_StreamCreateFile(path, 0L, 0L, BASSFlag.BASS_DEFAULT)) != 0)
             {
                 Bass.BASS_ChannelPlay(stream, false);
@@ -142,7 +148,7 @@ namespace upikapik
          * */
         public void seek(int pos)
         {
-            Bass.BASS_ChannelSetPosition(stream, pos);
+            Bass.BASS_ChannelSetPosition(stream, (double)pos);
         }
 
         // bass spesific good routine
