@@ -21,5 +21,10 @@ namespace upikapik
             TimeSpan time = new TimeSpan(0, 0, seconds);
             return time;
         }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+
+        }
     }
 }
