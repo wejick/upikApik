@@ -37,10 +37,12 @@
             this.lytMonitor = new System.Windows.Forms.TableLayoutPanel();
             this.barProgress = new System.Windows.Forms.ProgressBar();
             this.barSeek = new System.Windows.Forms.TrackBar();
+            this.barVol = new System.Windows.Forms.TrackBar();
             this.lytMain.SuspendLayout();
             this.lytFlow.SuspendLayout();
             this.lytMonitor.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.barSeek)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.barVol)).BeginInit();
             this.SuspendLayout();
             // 
             // lytMain
@@ -55,8 +57,8 @@
             this.lytMain.Location = new System.Drawing.Point(0, 0);
             this.lytMain.Name = "lytMain";
             this.lytMain.RowCount = 4;
-            this.lytMain.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 57F));
-            this.lytMain.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 45F));
+            this.lytMain.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 67F));
+            this.lytMain.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 35F));
             this.lytMain.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.lytMain.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
             this.lytMain.Size = new System.Drawing.Size(292, 291);
@@ -66,11 +68,12 @@
             // 
             this.lytFlow.Controls.Add(this.btnPlay);
             this.lytFlow.Controls.Add(this.btnOpen);
+            this.lytFlow.Controls.Add(this.barVol);
             this.lytFlow.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.lytFlow.Location = new System.Drawing.Point(3, 60);
+            this.lytFlow.Location = new System.Drawing.Point(3, 70);
             this.lytFlow.MaximumSize = new System.Drawing.Size(0, 40);
             this.lytFlow.Name = "lytFlow";
-            this.lytFlow.Size = new System.Drawing.Size(286, 39);
+            this.lytFlow.Size = new System.Drawing.Size(286, 29);
             this.lytFlow.TabIndex = 0;
             // 
             // btnPlay
@@ -121,20 +124,20 @@
             this.lytMonitor.Controls.Add(this.barSeek, 0, 0);
             this.lytMonitor.Dock = System.Windows.Forms.DockStyle.Fill;
             this.lytMonitor.Location = new System.Drawing.Point(3, 3);
-            this.lytMonitor.MaximumSize = new System.Drawing.Size(0, 80);
+            this.lytMonitor.MaximumSize = new System.Drawing.Size(0, 100);
             this.lytMonitor.Name = "lytMonitor";
             this.lytMonitor.RowCount = 2;
             this.lytMonitor.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
             this.lytMonitor.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.lytMonitor.Size = new System.Drawing.Size(286, 51);
+            this.lytMonitor.Size = new System.Drawing.Size(286, 61);
             this.lytMonitor.TabIndex = 3;
             // 
             // barProgress
             // 
             this.barProgress.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.barProgress.Location = new System.Drawing.Point(3, 28);
+            this.barProgress.Location = new System.Drawing.Point(3, 33);
             this.barProgress.Name = "barProgress";
-            this.barProgress.Size = new System.Drawing.Size(280, 20);
+            this.barProgress.Size = new System.Drawing.Size(280, 25);
             this.barProgress.TabIndex = 0;
             // 
             // barSeek
@@ -142,10 +145,19 @@
             this.barSeek.Dock = System.Windows.Forms.DockStyle.Fill;
             this.barSeek.Location = new System.Drawing.Point(3, 3);
             this.barSeek.Name = "barSeek";
-            this.barSeek.Size = new System.Drawing.Size(280, 19);
+            this.barSeek.Size = new System.Drawing.Size(280, 24);
             this.barSeek.TabIndex = 1;
             this.barSeek.TickStyle = System.Windows.Forms.TickStyle.None;
             this.barSeek.Scroll += new System.EventHandler(this.barSeek_Scroll);
+            // 
+            // barVol
+            // 
+            this.barVol.Location = new System.Drawing.Point(165, 3);
+            this.barVol.Name = "barVol";
+            this.barVol.Size = new System.Drawing.Size(104, 45);
+            this.barVol.TabIndex = 2;
+            this.barVol.Value = 10;
+            this.barVol.Scroll += new System.EventHandler(this.barVol_Scroll);
             // 
             // Form1
             // 
@@ -154,14 +166,16 @@
             this.ClientSize = new System.Drawing.Size(292, 291);
             this.Controls.Add(this.lytMain);
             this.Name = "Form1";
-            this.Text = "upikApik";
+            this.Text = "UpikApik";
             this.Load += new System.EventHandler(this.Form1_Load);
             this.lytMain.ResumeLayout(false);
             this.lytMain.PerformLayout();
             this.lytFlow.ResumeLayout(false);
+            this.lytFlow.PerformLayout();
             this.lytMonitor.ResumeLayout(false);
             this.lytMonitor.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.barSeek)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.barVol)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -177,6 +191,7 @@
         private System.Windows.Forms.TableLayoutPanel lytMonitor;
         private System.Windows.Forms.ProgressBar barProgress;
         private System.Windows.Forms.TrackBar barSeek;
+        private System.Windows.Forms.TrackBar barVol;
     }
 }
 

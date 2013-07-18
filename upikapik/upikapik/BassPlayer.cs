@@ -45,7 +45,14 @@ namespace upikapik
         private void setPath(string path)
         {
             this.path = path;
-        }        
+        }
+        /*
+         * < Set volume>
+         * */
+        public void setVolume(int vol)
+        {
+            Bass.BASS_SetVolume(((float)vol) / 10);
+        }
         // get info from stream
         /*
          * < Get path from active stream source>
@@ -95,7 +102,14 @@ namespace upikapik
         {
             return (int)Bass.BASS_ChannelBytes2Seconds(stream, streamPos);
         }
-
+        /*
+         * < Get current volume>
+         * @return volume in int
+         * */
+        public int getVolume()
+        {
+            return (int)(Bass.BASS_GetVolume() * 10);
+        }
         // control the stream
         /*
          * < Play the stream >
@@ -129,10 +143,16 @@ namespace upikapik
             {
                 // if stream playing, pause it
                 if (Bass.BASS_ChannelIsActive(stream) == BASSActive.BASS_ACTIVE_PLAYING)
+                {
                     Bass.BASS_ChannelPause(stream);
+                    mainTime.Stop();
+                }
                 // if stream paused, play it
                 else if (Bass.BASS_ChannelIsActive(stream) == BASSActive.BASS_ACTIVE_PAUSED)
+                {
+                    mainTime.Start();
                     Bass.BASS_ChannelPlay(stream, false);
+                }
             }
         }
         /*

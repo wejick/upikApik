@@ -62,6 +62,9 @@ namespace upikapik
             timeTotal = player.getLenSec();
             barSeek.SetRange(0, timeTotal);
             timerForm.Start();
+
+            this.Text = "UpikApik : " + player.getFileName();
+            barVol.Value = player.getVolume();
         }
 
         private void onTimerForm(object source, EventArgs e)
@@ -76,6 +79,11 @@ namespace upikapik
         {
             TimeSpan time = new TimeSpan(0, 0, seconds);
             return time;
+        }
+
+        private void barVol_Scroll(object sender, EventArgs e)
+        {
+            player.setVolume(barVol.Value);
         }
     }
 }
