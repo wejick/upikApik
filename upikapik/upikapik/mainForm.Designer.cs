@@ -38,6 +38,7 @@
             this.lytMonitor = new System.Windows.Forms.TableLayoutPanel();
             this.barProgress = new System.Windows.Forms.ProgressBar();
             this.barSeek = new System.Windows.Forms.TrackBar();
+            this.checkShuffle = new System.Windows.Forms.CheckBox();
             this.lytMain.SuspendLayout();
             this.lytFlow.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.barVol)).BeginInit();
@@ -61,7 +62,7 @@
             this.lytMain.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 35F));
             this.lytMain.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.lytMain.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
-            this.lytMain.Size = new System.Drawing.Size(292, 291);
+            this.lytMain.Size = new System.Drawing.Size(371, 291);
             this.lytMain.TabIndex = 0;
             // 
             // lytFlow
@@ -69,11 +70,12 @@
             this.lytFlow.Controls.Add(this.btnPlay);
             this.lytFlow.Controls.Add(this.btnOpen);
             this.lytFlow.Controls.Add(this.barVol);
+            this.lytFlow.Controls.Add(this.checkShuffle);
             this.lytFlow.Dock = System.Windows.Forms.DockStyle.Fill;
             this.lytFlow.Location = new System.Drawing.Point(3, 70);
             this.lytFlow.MaximumSize = new System.Drawing.Size(0, 40);
             this.lytFlow.Name = "lytFlow";
-            this.lytFlow.Size = new System.Drawing.Size(286, 29);
+            this.lytFlow.Size = new System.Drawing.Size(365, 29);
             this.lytFlow.TabIndex = 0;
             // 
             // btnPlay
@@ -111,7 +113,7 @@
             this.listPlay.FormattingEnabled = true;
             this.listPlay.Location = new System.Drawing.Point(3, 105);
             this.listPlay.Name = "listPlay";
-            this.listPlay.Size = new System.Drawing.Size(286, 163);
+            this.listPlay.Size = new System.Drawing.Size(365, 163);
             this.listPlay.TabIndex = 1;
             this.listPlay.DoubleClick += new System.EventHandler(this.listPlay_DoubleClick);
             // 
@@ -121,7 +123,7 @@
             this.lblStatus.Dock = System.Windows.Forms.DockStyle.Fill;
             this.lblStatus.Location = new System.Drawing.Point(3, 271);
             this.lblStatus.Name = "lblStatus";
-            this.lblStatus.Size = new System.Drawing.Size(286, 20);
+            this.lblStatus.Size = new System.Drawing.Size(365, 20);
             this.lblStatus.TabIndex = 2;
             this.lblStatus.Text = "Not Playing";
             // 
@@ -138,7 +140,7 @@
             this.lytMonitor.RowCount = 2;
             this.lytMonitor.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
             this.lytMonitor.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.lytMonitor.Size = new System.Drawing.Size(286, 61);
+            this.lytMonitor.Size = new System.Drawing.Size(365, 61);
             this.lytMonitor.TabIndex = 3;
             // 
             // barProgress
@@ -146,7 +148,7 @@
             this.barProgress.Dock = System.Windows.Forms.DockStyle.Fill;
             this.barProgress.Location = new System.Drawing.Point(3, 33);
             this.barProgress.Name = "barProgress";
-            this.barProgress.Size = new System.Drawing.Size(280, 25);
+            this.barProgress.Size = new System.Drawing.Size(359, 25);
             this.barProgress.TabIndex = 0;
             // 
             // barSeek
@@ -154,17 +156,29 @@
             this.barSeek.Dock = System.Windows.Forms.DockStyle.Fill;
             this.barSeek.Location = new System.Drawing.Point(3, 3);
             this.barSeek.Name = "barSeek";
-            this.barSeek.Size = new System.Drawing.Size(280, 24);
+            this.barSeek.Size = new System.Drawing.Size(359, 24);
             this.barSeek.SmallChange = 6;
             this.barSeek.TabIndex = 1;
             this.barSeek.TickStyle = System.Windows.Forms.TickStyle.None;
             this.barSeek.Scroll += new System.EventHandler(this.barSeek_Scroll);
             // 
+            // checkShuffle
+            // 
+            this.checkShuffle.Appearance = System.Windows.Forms.Appearance.Button;
+            this.checkShuffle.AutoSize = true;
+            this.checkShuffle.Location = new System.Drawing.Point(275, 3);
+            this.checkShuffle.Name = "checkShuffle";
+            this.checkShuffle.Size = new System.Drawing.Size(50, 23);
+            this.checkShuffle.TabIndex = 3;
+            this.checkShuffle.Text = "Shuffle";
+            this.checkShuffle.UseVisualStyleBackColor = true;
+            this.checkShuffle.CheckedChanged += new System.EventHandler(this.checkBox1_CheckedChanged);
+            // 
             // mainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(292, 291);
+            this.ClientSize = new System.Drawing.Size(371, 291);
             this.Controls.Add(this.lytMain);
             this.Name = "mainForm";
             this.Text = "UpikApik";
@@ -193,6 +207,7 @@
         private System.Windows.Forms.ProgressBar barProgress;
         private System.Windows.Forms.TrackBar barSeek;
         private System.Windows.Forms.TrackBar barVol;
+        private System.Windows.Forms.CheckBox checkShuffle;
     }
 }
 

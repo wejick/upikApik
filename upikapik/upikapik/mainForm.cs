@@ -12,7 +12,11 @@ namespace upikapik
         string[] paths;
         int timeTotal;
         int timeCurrent;
+        int indexOfPlayedFile;
+        bool shuffle = false;
         Timer timerForm;
+        Random rand = new Random();
+
         public mainForm()
         {
             InitializeComponent();
@@ -26,12 +30,7 @@ namespace upikapik
             timerForm.Interval = 500;
             timerForm.Tick += new EventHandler(onTimerForm);            
         }
-
-        private void Form1_Load(object sender, EventArgs e)
-        {
-
-        }
-
+                
         private void btnPlay_Click(object sender, EventArgs e)
         {
             player.pause_resume();
@@ -60,13 +59,9 @@ namespace upikapik
         {
             if(listPlay.Items.Count != 0 )
             {
-                player.play(paths[listPlay.SelectedIndex]);
-                timeTotal = player.getLenSec();
-                barSeek.SetRange(0, timeTotal);
+                indexOfPlayedFile = listPlay.SelectedIndex;
+                play();
                 timerForm.Start();
-
-                this.Text = "UpikApik : " + player.getFileName();
-                barVol.Value = player.getVolume();
             }
         }
 
@@ -76,6 +71,18 @@ namespace upikapik
             lblStatus.Text = "Time : " + s2t(timeTotal) + " / " + s2t(player.getPosSec());
             if(timeCurrent != -1)
                 barSeek.Value = timeCurrent;
+            
+            // play next song
+            if ((listPlay.Items.Count-1 > indexOfPlayedFile) && !(player.isActive()) && !shuffle)
+            {
+                indexOfPlayedFile++;
+                play();
+            }
+            else if (!(player.isActive()) && shuffle)
+            {
+                indexOfPlayedFile = rand.Next(0, listPlay.Items.Count);
+                play();
+            }
         }
 
         private TimeSpan s2t(int seconds)
@@ -87,6 +94,31 @@ namespace upikapik
         private void barVol_Scroll(object sender, EventArgs e)
         {
             player.setVolume(barVol.Value);
+        }
+
+        private void play()
+        {
+            player.play(paths[indexOfPlayedFile]);
+            timeTotal = player.getLenSec();
+            barSeek.SetRange(0, timeTotal);
+            this.Text = "UpikApik : " + player.getFileName();
+
+            barVol.Value = player.getVolume();
+        }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+
+        }
+
+        private void checkBox1_CheckedChanged(object sender, EventArgs e)
+        {
+            if (shuffle == false)
+            {
+                shuffle = true;
+            }
+            else
+                shuffle = false;
         }
     }
 }

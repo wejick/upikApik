@@ -121,6 +121,17 @@ namespace upikapik
             else
                 return false;
         }
+        /*
+         * < Is the stream not active ?>
+         * @return true if stream paused
+         * */
+        public bool isActive()
+        {
+            if (Bass.BASS_ChannelIsActive(stream) == BASSActive.BASS_ACTIVE_STOPPED)
+                return false;
+            else
+                return true;
+        }
         // control the stream
         /*
          * < Play the stream >
