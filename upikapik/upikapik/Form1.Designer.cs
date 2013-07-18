@@ -151,6 +151,7 @@
             this.Controls.Add(this.lytMain);
             this.Name = "Form1";
             this.Text = "upikApik";
+            this.Load += new System.EventHandler(this.Form1_Load);
             this.lytMain.ResumeLayout(false);
             this.lytMain.PerformLayout();
             this.lytFlow.ResumeLayout(false);

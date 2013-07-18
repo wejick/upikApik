@@ -15,5 +15,11 @@ namespace upikapik
         {
             InitializeComponent();
         }
+
+        private TimeSpan s2t(int seconds)
+        {
+            TimeSpan time = new TimeSpan(0, 0, seconds);
+            return time;
+        }
     }
 }
