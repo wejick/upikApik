@@ -4,7 +4,7 @@ using System.Windows.Forms;
 
 namespace upikapik
 {
-    public partial class Form1 : Form
+    public partial class mainForm : Form
     {
         BassPlayer player;
         private OpenFileDialog opnFile;
@@ -13,7 +13,7 @@ namespace upikapik
         int timeTotal;
         int timeCurrent;
         Timer timerForm;
-        public Form1()
+        public mainForm()
         {
             InitializeComponent();
             opnFile = new OpenFileDialog();
@@ -58,13 +58,16 @@ namespace upikapik
 
         private void listPlay_DoubleClick(object sender, EventArgs e)
         {
-            player.play(paths[listPlay.SelectedIndex]);
-            timeTotal = player.getLenSec();
-            barSeek.SetRange(0, timeTotal);
-            timerForm.Start();
+            if(listPlay.Items.Count != 0 )
+            {
+                player.play(paths[listPlay.SelectedIndex]);
+                timeTotal = player.getLenSec();
+                barSeek.SetRange(0, timeTotal);
+                timerForm.Start();
 
-            this.Text = "UpikApik : " + player.getFileName();
-            barVol.Value = player.getVolume();
+                this.Text = "UpikApik : " + player.getFileName();
+                barVol.Value = player.getVolume();
+            }
         }
 
         private void onTimerForm(object source, EventArgs e)

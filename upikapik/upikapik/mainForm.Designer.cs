@@ -1,6 +1,6 @@
 ﻿namespace upikapik
 {
-    partial class Form1
+    partial class mainForm
     {
         /// <summary>
         /// Required designer variable.
@@ -32,17 +32,17 @@
             this.lytFlow = new System.Windows.Forms.FlowLayoutPanel();
             this.btnPlay = new System.Windows.Forms.Button();
             this.btnOpen = new System.Windows.Forms.Button();
+            this.barVol = new System.Windows.Forms.TrackBar();
             this.listPlay = new System.Windows.Forms.ListBox();
             this.lblStatus = new System.Windows.Forms.Label();
             this.lytMonitor = new System.Windows.Forms.TableLayoutPanel();
             this.barProgress = new System.Windows.Forms.ProgressBar();
             this.barSeek = new System.Windows.Forms.TrackBar();
-            this.barVol = new System.Windows.Forms.TrackBar();
             this.lytMain.SuspendLayout();
             this.lytFlow.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.barVol)).BeginInit();
             this.lytMonitor.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.barSeek)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.barVol)).BeginInit();
             this.SuspendLayout();
             // 
             // lytMain
@@ -96,6 +96,15 @@
             this.btnOpen.UseVisualStyleBackColor = true;
             this.btnOpen.Click += new System.EventHandler(this.btnOpen_Click);
             // 
+            // barVol
+            // 
+            this.barVol.Location = new System.Drawing.Point(165, 3);
+            this.barVol.Name = "barVol";
+            this.barVol.Size = new System.Drawing.Size(104, 45);
+            this.barVol.TabIndex = 2;
+            this.barVol.Value = 10;
+            this.barVol.Scroll += new System.EventHandler(this.barVol_Scroll);
+            // 
             // listPlay
             // 
             this.listPlay.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -146,36 +155,28 @@
             this.barSeek.Location = new System.Drawing.Point(3, 3);
             this.barSeek.Name = "barSeek";
             this.barSeek.Size = new System.Drawing.Size(280, 24);
+            this.barSeek.SmallChange = 6;
             this.barSeek.TabIndex = 1;
             this.barSeek.TickStyle = System.Windows.Forms.TickStyle.None;
             this.barSeek.Scroll += new System.EventHandler(this.barSeek_Scroll);
             // 
-            // barVol
-            // 
-            this.barVol.Location = new System.Drawing.Point(165, 3);
-            this.barVol.Name = "barVol";
-            this.barVol.Size = new System.Drawing.Size(104, 45);
-            this.barVol.TabIndex = 2;
-            this.barVol.Value = 10;
-            this.barVol.Scroll += new System.EventHandler(this.barVol_Scroll);
-            // 
-            // Form1
+            // mainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(292, 291);
             this.Controls.Add(this.lytMain);
-            this.Name = "Form1";
+            this.Name = "mainForm";
             this.Text = "UpikApik";
             this.Load += new System.EventHandler(this.Form1_Load);
             this.lytMain.ResumeLayout(false);
             this.lytMain.PerformLayout();
             this.lytFlow.ResumeLayout(false);
             this.lytFlow.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.barVol)).EndInit();
             this.lytMonitor.ResumeLayout(false);
             this.lytMonitor.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.barSeek)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.barVol)).EndInit();
             this.ResumeLayout(false);
 
         }

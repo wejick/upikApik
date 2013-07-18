@@ -110,6 +110,17 @@ namespace upikapik
         {
             return (int)(Bass.BASS_GetVolume() * 10);
         }
+        /*
+         * < Is the stream paused ?>
+         * @return true if stream paused
+         * */
+        public bool isPause()
+        {
+            if (Bass.BASS_ChannelIsActive(stream) == BASSActive.BASS_ACTIVE_PAUSED)
+                return true;
+            else
+                return false;
+        }
         // control the stream
         /*
          * < Play the stream >
