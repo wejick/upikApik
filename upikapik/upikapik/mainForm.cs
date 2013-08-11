@@ -1,86 +1,89 @@
 ﻿using System;
 using System.Text;
 using System.Windows.Forms;
-
+using System.Net.Sockets;
 namespace upikapik
 {
     public partial class mainForm : Form
     {
-        BassPlayer player;
-        private OpenFileDialog opnFile;
-        string[] files;
-        string[] paths;
-        int timeTotal;
-        int timeCurrent;
-        int indexOfPlayedFile;
-        bool shuffle = false;
-        Timer timerForm;
-        Random rand = new Random();
-
+        BassPlayer _player;
+        private OpenFileDialog _opnFile;
+        string[] _files;
+        string[] _paths;
+        int _timeTotal;
+        int _timeCurrent;
+        int _indexOfPlayedFile;
+        bool _shuffle = false;
+        Timer _timerPlayer;
+        Timer _timerRed;
+        Random _rand = new Random();
+        RedToHub _toHub = new RedToHub("RedDb.db4o","192.168.0.1",1337); // need to be esier to change
         public mainForm()
         {
             InitializeComponent();
-            opnFile = new OpenFileDialog();
-            player = new BassPlayer();
-            timerForm = new Timer();
+            _opnFile = new OpenFileDialog();
+            _player = new BassPlayer();
+            _timerPlayer = new Timer();
+            _timerRed = new Timer();
 
-            opnFile.Filter = "mp3 (*.mp3)|*.mp3";
-            opnFile.Multiselect = true;
+            _opnFile.Filter = "mp3 (*.mp3)|*.mp3";
+            _opnFile.Multiselect = true;
 
-            timerForm.Interval = 500;
-            timerForm.Tick += new EventHandler(onTimerForm);            
+            _timerPlayer.Interval = 500;
+            _timerPlayer.Tick += new EventHandler(onTimerPlayer);
+            _timerRed.Interval = 18000; // 3 minutes
         }
                 
         private void btnPlay_Click(object sender, EventArgs e)
         {
-            player.pause_resume();
+            _player.pause_resume();
         }
 
         private void btnOpen_Click(object sender, EventArgs e)
         {
-            if (opnFile.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            if (_opnFile.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
-                files = opnFile.SafeFileNames;
-                paths = opnFile.FileNames;
+                _files = _opnFile.SafeFileNames;
+                _paths = _opnFile.FileNames;
                 listPlay.Items.Clear();
-                for (int i = 0; i < files.Length; i++)
+                for (int i = 0; i < _files.Length; i++)
                 {
-                    listPlay.Items.Add(files[i]);
+                    listPlay.Items.Add(_files[i]);
                 }
             }
         }
 
         private void barSeek_Scroll(object sender, EventArgs e)
         {
-            player.seek(barSeek.Value);
+            _player.seek(barSeek.Value);
         }
 
         private void listPlay_DoubleClick(object sender, EventArgs e)
         {
             if(listPlay.Items.Count != 0 )
             {
-                indexOfPlayedFile = listPlay.SelectedIndex;
+                _indexOfPlayedFile = listPlay.SelectedIndex;
                 play();
-                timerForm.Start();
+                _timerPlayer.Start();
             }
         }
 
-        private void onTimerForm(object source, EventArgs e)
+        private void onTimerPlayer(object source, EventArgs e)
         {
-            timeCurrent = player.getPosSec();
-            lblStatus.Text = "Time : " + s2t(timeTotal) + " / " + s2t(player.getPosSec());
-            if(timeCurrent != -1)
-                barSeek.Value = timeCurrent;
+            _timeCurrent = _player.getPosSec();
+            lblStatus.Text = "Time : " + s2t(_timeTotal) + " / " + s2t(_player.getPosSec());
+            if(_timeCurrent != -1)
+                barSeek.Value = _timeCurrent;
             
             // play next song
-            if ((listPlay.Items.Count-1 > indexOfPlayedFile) && !(player.isActive()) && !shuffle)
+            if ((listPlay.Items.Count-1 > _indexOfPlayedFile) && !(_player.isActive()) && !_shuffle)
             {
-                indexOfPlayedFile++;
+                _indexOfPlayedFile++;
                 play();
             }
-            else if (!(player.isActive()) && shuffle)
+            else if (!(_player.isActive()) && _shuffle)
             {
-                indexOfPlayedFile = rand.Next(0, listPlay.Items.Count);
+                _indexOfPlayedFile = _rand.Next(0, listPlay.Items.Count);
                 play();
             }
         }
@@ -93,17 +96,17 @@ namespace upikapik
 
         private void barVol_Scroll(object sender, EventArgs e)
         {
-            player.setVolume(barVol.Value);
+            _player.setVolume(barVol.Value);
         }
 
         private void play()
         {
-            player.play(paths[indexOfPlayedFile]);
-            timeTotal = player.getLenSec();
-            barSeek.SetRange(0, timeTotal);
-            this.Text = "UpikApik : " + player.getFileName();
+            _player.play(_paths[_indexOfPlayedFile]);
+            _timeTotal = _player.getLenSec();
+            barSeek.SetRange(0, _timeTotal);
+            this.Text = "UpikApik : " + _player.getFileName();
 
-            barVol.Value = player.getVolume();
+            barVol.Value = _player.getVolume();
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -113,12 +116,17 @@ namespace upikapik
 
         private void checkBox1_CheckedChanged(object sender, EventArgs e)
         {
-            if (shuffle == false)
+            if (_shuffle == false)
             {
-                shuffle = true;
+                _shuffle = true;
             }
             else
-                shuffle = false;
+                _shuffle = false;
+        }
+
+        private void listPlay_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
         }
     }
 }
