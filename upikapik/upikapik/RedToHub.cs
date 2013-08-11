@@ -30,17 +30,29 @@ namespace upikapik
         }
 
         // this is where the socket client and thread live :-D
-        public void connect(string command)
+        public void command(string command)
         {
             ThreadPool.QueueUserWorkItem(new WaitCallback(connectionHandler));
             this.comToHub = command;
             parsedCommand = comToHub.Split(';');
         }
+        // get file list from db
+        public List<file_list> getFileList()
+        {
+            List<file_list> fileList = new List<file_list>();
+            dynamic files = from file_list f in db select f;
+            foreach(var item in files)
+            {
+                fileList.Add(item);
+            }
+            return fileList;
+        }
+        // parse command and choose suitable command to execute
         private void connectionHandler(object pStateObj)
         {
             //TcpClient red = new TcpClient(server);
             TcpClient red = new TcpClient();
-            red.Connect(server);
+                red.Connect(server);
             // create buffer and set encoding to UTF8
             //byte[] buffer = System.Text.Encoding.UTF8.GetBytes(comToHub);
             byte[] buffer = System.Text.Encoding.UTF8.GetBytes(comToHub);
@@ -73,19 +85,16 @@ namespace upikapik
                 response = System.Text.Encoding.UTF8.GetString(buffer);
             if (parsedCommand[0] == "FL")
             {
-                getFileList(response);
+                comFileList(response);
             }
             if (parsedCommand[0] == "FD")
             {
-                getFileDetail(response,Convert.ToInt16(parsedCommand[1]));
+                comFileDetail(response,Convert.ToInt16(parsedCommand[1]));
             }
             stream.Close();
         }
-        public void printResponse()
-        {
-            Console.WriteLine("Isi response : {0}", response);
-        }
-        private void getFileList(string response)
+        // send command and retrive file list from hub
+        private void comFileList(string response)
         {
             List<file_list> list = JsonConvert.DeserializeObject<List<file_list>>(response);
             dynamic all = from file_list f in db select f;
@@ -101,7 +110,8 @@ namespace upikapik
             }
             Console.WriteLine(response);
         }
-        private void getFileDetail(string response, int id)
+        // send command and retrieve file detail from hub
+        private void comFileDetail(string response, int id)
         {
             string fileDetail = response;
             List<file_host_rel> update = JsonConvert.DeserializeObject<List<file_host_rel>>(response);
