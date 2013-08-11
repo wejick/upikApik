@@ -20,7 +20,7 @@ namespace upikapik
         private string comToHub;
         private string response;
         private string[] parsedCommand;
-
+        private bool connect = true; // potential race condition
         public RedToHub(string dbName, string trackerIP, int port)
         {
             db = Db4oEmbedded.OpenFile(dbName);
@@ -28,7 +28,11 @@ namespace upikapik
             this.port = port;
             server = new IPEndPoint(IPAddress.Parse(trackerIP), port);
         }
-
+        // is connect
+        public bool isConnect()
+        {
+            return connect;
+        }
         // this is where the socket client and thread live :-D
         public void command(string command)
         {
@@ -52,51 +56,62 @@ namespace upikapik
         {
             //TcpClient red = new TcpClient(server);
             TcpClient red = new TcpClient();
+            try
+            {
                 red.Connect(server);
-            // create buffer and set encoding to UTF8
-            //byte[] buffer = System.Text.Encoding.UTF8.GetBytes(comToHub);
-            byte[] buffer = System.Text.Encoding.UTF8.GetBytes(comToHub);
-            // prepare stream to write or read
-            NetworkStream stream = red.GetStream();
-            // send command to HUB
-            if (parsedCommand[0] == "FL")
-            {
-                buffer = System.Text.Encoding.UTF8.GetBytes(parsedCommand[0]);
             }
-            if (parsedCommand[0] == "FD")
+            catch (SocketException ex)
             {
-                buffer = System.Text.Encoding.UTF8.GetBytes(parsedCommand[0]+";;"+parsedCommand[1]);
+                Console.WriteLine(ex.ErrorCode + " " + ex.InnerException);
+                connect = false;
             }
-            if (parsedCommand[0] == "UP")
+            if (connect == true)
             {
-                // command;;id_file;;block_avail
-                buffer = System.Text.Encoding.UTF8.GetBytes(parsedCommand[0] + ";;" + parsedCommand[1] + ";;" + parsedCommand[2]);
-            }
-            if (parsedCommand[0] == "NA")
-            {
-                buffer = System.Text.Encoding.UTF8.GetBytes(parsedCommand[0]);
-            }
-            if (parsedCommand[0] == "ADD")
-            {
-                // command;;file_name;;bitrate;;samplerate;;size
-                buffer = System.Text.Encoding.UTF8.GetBytes(parsedCommand[0] + ";;" + parsedCommand[1] + ";;" + parsedCommand[2] + ";;" + parsedCommand[3] + ";;" + parsedCommand[4]);
-            }
-            stream.Write(buffer, 0, buffer.Length);
+                // create buffer and set encoding to UTF8
+                //byte[] buffer = System.Text.Encoding.UTF8.GetBytes(comToHub);
+                byte[] buffer = System.Text.Encoding.UTF8.GetBytes(comToHub);
+                // prepare stream to write or read
+                NetworkStream stream = red.GetStream();
+                // send command to HUB
+                if (parsedCommand[0] == "FL")
+                {
+                    buffer = System.Text.Encoding.UTF8.GetBytes(parsedCommand[0]);
+                }
+                if (parsedCommand[0] == "FD")
+                {
+                    buffer = System.Text.Encoding.UTF8.GetBytes(parsedCommand[0] + ";;" + parsedCommand[1]);
+                }
+                if (parsedCommand[0] == "UP")
+                {
+                    // command;;id_file;;block_avail
+                    buffer = System.Text.Encoding.UTF8.GetBytes(parsedCommand[0] + ";;" + parsedCommand[1] + ";;" + parsedCommand[2]);
+                }
+                if (parsedCommand[0] == "NA")
+                {
+                    buffer = System.Text.Encoding.UTF8.GetBytes(parsedCommand[0]);
+                }
+                if (parsedCommand[0] == "ADD")
+                {
+                    // command;;file_name;;bitrate;;samplerate;;size
+                    buffer = System.Text.Encoding.UTF8.GetBytes(parsedCommand[0] + ";;" + parsedCommand[1] + ";;" + parsedCommand[2] + ";;" + parsedCommand[3] + ";;" + parsedCommand[4]);
+                }
+                stream.Write(buffer, 0, buffer.Length);
 
-            // clear buffer
-            buffer = new Byte[1024];
-            int byteCnt = stream.Read(buffer, 0, buffer.Length);
-            if(parsedCommand[0] == "FL"||parsedCommand[0] == "FD")
-                response = System.Text.Encoding.UTF8.GetString(buffer);
-            if (parsedCommand[0] == "FL")
-            {
-                comFileList(response);
+                // clear buffer
+                buffer = new Byte[1024];
+                int byteCnt = stream.Read(buffer, 0, buffer.Length);
+                if (parsedCommand[0] == "FL" || parsedCommand[0] == "FD")
+                    response = System.Text.Encoding.UTF8.GetString(buffer);
+                if (parsedCommand[0] == "FL")
+                {
+                    comFileList(response);
+                }
+                if (parsedCommand[0] == "FD")
+                {
+                    comFileDetail(response, Convert.ToInt16(parsedCommand[1]));
+                }
+                stream.Close();
             }
-            if (parsedCommand[0] == "FD")
-            {
-                comFileDetail(response,Convert.ToInt16(parsedCommand[1]));
-            }
-            stream.Close();
         }
         // send command and retrive file list from hub
         private void comFileList(string response)
