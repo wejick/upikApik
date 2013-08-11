@@ -76,6 +76,11 @@ namespace upikapik
             {
                 buffer = System.Text.Encoding.UTF8.GetBytes(parsedCommand[0]);
             }
+            if (parsedCommand[0] == "ADD")
+            {
+                // command;;file_name;;bitrate;;samplerate;;size
+                buffer = System.Text.Encoding.UTF8.GetBytes(parsedCommand[0] + ";;" + parsedCommand[1] + ";;" + parsedCommand[2] + ";;" + parsedCommand[3] + ";;" + parsedCommand[4]);
+            }
             stream.Write(buffer, 0, buffer.Length);
 
             // clear buffer
