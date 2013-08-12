@@ -103,7 +103,7 @@ namespace upikapik
                 intTotalFrame = getFrameNumber();
                 fs.Close();
                 return true;
-            }            
+            }
             return false;
         }
         // get frame size
@@ -111,9 +111,9 @@ namespace upikapik
         {
             int frameSize;
             if (boolPadding)
-                frameSize = (144 * intBitRate / intFrequency) + 1;
+                frameSize = (144 * (intBitRate*1000) / intFrequency) + 1;
             else
-                frameSize = (144 * intBitRate / intFrequency);
+                frameSize = (144 * (intBitRate * 1000) / intFrequency);
             return frameSize;
         }
         // get frame number
@@ -121,7 +121,7 @@ namespace upikapik
         {
             int frameNumber;
             int fileSize = Convert.ToInt32(lngFileSize);
-            frameNumber = fileSize / (7 + fileSize);
+            frameNumber = fileSize / (7 + intFrameSize);
             return frameNumber;
         }
         private void LoadMP3Header(byte[] c)
