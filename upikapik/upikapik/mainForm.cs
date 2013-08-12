@@ -38,6 +38,8 @@ namespace upikapik
             _timerPlayer.Tick += new EventHandler(onTimerPlayer);
             _timerRed.Interval = 540000; // 9 minutes
             _timerRed.Tick += new EventHandler(onTimerRed);
+
+            _toHub.command("NA");
         }
                 
         private void btnPlay_Click(object sender, EventArgs e)
@@ -101,6 +103,7 @@ namespace upikapik
             _toHub.command("FL");
             System.Threading.Thread.Sleep(500);
             _toHub.command("NA");
+            refreshList();
         }
         private TimeSpan s2t(int seconds)
         {
@@ -147,6 +150,10 @@ namespace upikapik
         {
             _toHub.command("FL");
             System.Threading.Thread.Sleep(100);
+            refreshList();
+        }
+        private void refreshList()
+        {
             playList = _toHub.getFileList();
             listPlay.Items.Clear();
             foreach (var item in playList)
