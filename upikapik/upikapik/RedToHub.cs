@@ -121,6 +121,7 @@ namespace upikapik
                     comFileDetail(response, Convert.ToInt16(parsedCommand[1]));
                 }
                 stream.Close();
+                red.Close();
             }
         }
         // send command and retrive file list from hub
