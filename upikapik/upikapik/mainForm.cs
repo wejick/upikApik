@@ -19,7 +19,7 @@ namespace upikapik
         bool _shuffle = false;
         List<file_list> playList = new List<file_list>();
         Timer _timerPlayer;
-        Timer _timerRed;
+        Timer _timerRed; // May can be if implemented in redToHub
         Random _rand = new Random();
         RedToHub _toHub = new RedToHub("RedDb.db4o","192.168.0.1",1337); // need to be esier to change
         
@@ -27,23 +27,17 @@ namespace upikapik
         {
             InitializeComponent();
             _opnFile = new OpenFileDialog();
-            _opnFile.Multiselect = false;
             _player = new BassPlayer();
             _timerPlayer = new Timer();
             _timerRed = new Timer();
 
             _opnFile.Filter = "mp3 (*.mp3)|*.mp3";
-            _opnFile.Multiselect = true;
+            _opnFile.Multiselect = false;
 
             _timerPlayer.Interval = 500;
             _timerPlayer.Tick += new EventHandler(onTimerPlayer);
-            _timerRed.Interval = 18000; // 3 minutes
-
-            playList = _toHub.getFileList();
-            foreach (var item in playList)
-            {
-                listPlay.Items.Add(item.nama);
-            }
+            _timerRed.Interval = 540000; // 9 minutes
+            _timerRed.Tick += new EventHandler(onTimerRed);
         }
                 
         private void btnPlay_Click(object sender, EventArgs e)
@@ -102,7 +96,12 @@ namespace upikapik
                 play();
             }
         }
-
+        private void onTimerRed(object source, EventArgs e)
+        {
+            _toHub.command("FL");
+            System.Threading.Thread.Sleep(500);
+            _toHub.command("NA");
+        }
         private TimeSpan s2t(int seconds)
         {
             TimeSpan time = new TimeSpan(0, 0, seconds);
@@ -147,6 +146,7 @@ namespace upikapik
         private void btnRefresh_Click(object sender, EventArgs e)
         {
             _toHub.command("FL");
+            System.Threading.Thread.Sleep(100);
             playList = _toHub.getFileList();
             listPlay.Items.Clear();
             foreach (var item in playList)
