@@ -15,7 +15,9 @@ namespace upikapik
         public string strMode;
         public int intLength;
         public string strLengthFormatted;
-        public bool padding;
+        public bool boolPadding;
+        public int intFrameSize; // in byte
+        public int intTotalFrame; // number of frame in file
 
         // Private variables used in the process of reading in the MP3 files
         private ulong bithdr;
@@ -94,15 +96,34 @@ namespace upikapik
                 intLength = getLengthInSeconds();
                 strLengthFormatted = getFormattedLength();
                 if (getPaddingBit() == 1)
-                    padding = true;
+                    boolPadding = true;
                 else
-                    padding = false;
+                    boolPadding = false;
+                intFrameSize = getFrameSize();
+                intTotalFrame = getFrameNumber();
                 fs.Close();
                 return true;
-            }
+            }            
             return false;
         }
-
+        // get frame size
+        private int getFrameSize()
+        {
+            int frameSize;
+            if (boolPadding)
+                frameSize = (144 * intBitRate / intFrequency) + 1;
+            else
+                frameSize = (144 * intBitRate / intFrequency);
+            return frameSize;
+        }
+        // get frame number
+        private int getFrameNumber()
+        {
+            int frameNumber;
+            int fileSize = Convert.ToInt32(lngFileSize);
+            frameNumber = fileSize / (7 + fileSize);
+            return frameNumber;
+        }
         private void LoadMP3Header(byte[] c)
         {
             // this thing is quite interesting, it works like the following
