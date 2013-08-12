@@ -3,6 +3,7 @@ using System.Text;
 using System.Windows.Forms;
 using System.Net.Sockets;
 using System.IO;
+using System.Collections.Generic;
 namespace upikapik
 {
     public partial class mainForm : Form
@@ -10,16 +11,18 @@ namespace upikapik
         private const int MAX_FILE_AVAIL = 10;
         BassPlayer _player;
         private OpenFileDialog _opnFile;
-        string[] _files;
+//        string[] _files;
         string[] _paths;
         int _timeTotal;
         int _timeCurrent;
         int _indexOfPlayedFile;
         bool _shuffle = false;
+        List<file_list> playList = new List<file_list>();
         Timer _timerPlayer;
         Timer _timerRed;
         Random _rand = new Random();
         RedToHub _toHub = new RedToHub("RedDb.db4o","192.168.0.1",1337); // need to be esier to change
+        
         public mainForm()
         {
             InitializeComponent();
@@ -35,6 +38,12 @@ namespace upikapik
             _timerPlayer.Interval = 500;
             _timerPlayer.Tick += new EventHandler(onTimerPlayer);
             _timerRed.Interval = 18000; // 3 minutes
+
+            playList = _toHub.getFileList();
+            foreach (var item in playList)
+            {
+                listPlay.Items.Add(item.nama);
+            }
         }
                 
         private void btnPlay_Click(object sender, EventArgs e)
@@ -133,6 +142,17 @@ namespace upikapik
         private void listPlay_SelectedIndexChanged(object sender, EventArgs e)
         {
 
+        }
+
+        private void btnRefresh_Click(object sender, EventArgs e)
+        {
+            _toHub.command("FL");
+            playList = _toHub.getFileList();
+            listPlay.Items.Clear();
+            foreach (var item in playList)
+            {
+                listPlay.Items.Add(item.nama);
+            }
         }
     }
 }
