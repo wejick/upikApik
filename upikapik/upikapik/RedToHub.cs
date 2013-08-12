@@ -52,10 +52,12 @@ namespace upikapik
         {
             List<file_list> fileList = new List<file_list>();
             dynamic files = from file_list f in db select f;
-            fileCnt = files.count();
+            //fileCnt = files.count();
+            fileCnt = 0;
             foreach(var item in files)
             {
                 fileList.Add(item);
+                fileCnt++;
             }
             return fileList;
         }
@@ -198,11 +200,16 @@ namespace upikapik
             int fileIdInHub = 0;
             db.Store(file);
             this.command("ADD;"+file.nama+";"+file.bitrate+";"+file.samplerate+";"+file.size);
+            Thread.Sleep(500);
             this.command("FL");
+            Thread.Sleep(5000);
             dynamic t = from file_list sip in db select sip;
-            dynamic f = from file_list sip in db where sip.nama.Equals(file.nama) select sip;
-            foreach (var item in f)
-                fileIdInHub = item.id_file;
+            //dynamic f = from file_list sip in db where sip.nama.Equals(file.nama) select sip;
+            foreach (var item in t)
+            {
+                if(item.nama == file.nama)
+                    fileIdInHub = item.id_file;
+            }
             this.command("UP;" + fileIdInHub + ";" + file.block_avail);
         }
     }
