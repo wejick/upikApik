@@ -201,7 +201,16 @@ namespace upikapik
         {
             Bass.BASS_Free();
         }
+        /*
+         * < Set the maximum limit to play, the limit is from available block >
+         * < supposed to update by runtime method (what is it?) >
+         * < time conversion is from available_block * second per block >
+         * @param limit to play, from available block. In time
+         * */
+        public void setLimit(int limit)
+        {
 
+        }
         // utility
         /*
          * < Take filename from complete path >
