@@ -21,6 +21,7 @@ namespace upikapik
         private string response;
         private string[] parsedCommand;
         private bool connect = true; // potential race condition
+        private int fileCnt;
         public RedToHub(string dbName, string trackerIP, int port)
         {
             db = Db4oEmbedded.OpenFile(dbName);
@@ -32,6 +33,11 @@ namespace upikapik
         public bool isConnect()
         {
             return connect;
+        }
+        // how much file in network
+        public int howMuch()
+        {
+            return fileCnt;
         }
         // this is where the socket client and thread live :-D
         public void command(string command)
@@ -45,6 +51,7 @@ namespace upikapik
         {
             List<file_list> fileList = new List<file_list>();
             dynamic files = from file_list f in db select f;
+            fileCnt = files.count();
             foreach(var item in files)
             {
                 fileList.Add(item);
