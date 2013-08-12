@@ -5,6 +5,7 @@ using System.Threading;
 using System.Collections.Generic;
 using System.Text;
 using System.Linq;
+using System.IO;
 using Db4objects.Db4o;
 using Db4objects.Db4o.Linq;
 using Newtonsoft.Json;
@@ -160,6 +161,49 @@ namespace upikapik
                 Console.WriteLine(item.ip);
             }
             Console.WriteLine(response);
+        }
+
+        // Add entry to file_available db
+        public void addFileAvail(string filePath, int block_avail = 0)
+        {
+            storeFileAvailable(getInfo(filePath, block_avail));
+        }
+        // block_avail = 0 is full
+        public file_available getInfo(string filePath,int block_avail=0)
+        {
+            MP3Header reader = new MP3Header();
+            file_available file = new file_available();
+            
+            reader.ReadMP3Information(filePath);
+            file.nama = Path.GetFileName(Uri.UnescapeDataString(filePath).Replace("/", "\\"));
+            file.bitrate = reader.intBitRate;
+            file.samplerate = reader.intFrequency;
+            file.size = Convert.ToInt32(reader.lngFileSize);
+            // there are ambuguity between block and frame, actually this is same thing
+            if (block_avail == 0)
+            {
+                file.block_avail = reader.intTotalFrame;
+                file.full = true;
+            }
+            else
+            {
+                file.block_avail = block_avail;
+                file.full = false;
+            }            
+
+            return file;
+        }
+        public void storeFileAvailable(file_available file)
+        {
+            int fileIdInHub = 0;
+            db.Store(file);
+            this.command("ADD;"+file.nama+";"+file.bitrate+";"+file.samplerate+";"+file.size);
+            this.command("FL");
+            dynamic t = from file_list sip in db select sip;
+            dynamic f = from file_list sip in db where sip.nama.Equals(file.nama) select sip;
+            foreach (var item in f)
+                fileIdInHub = item.id_file;
+            this.command("UP;" + fileIdInHub + ";" + file.block_avail);
         }
     }
 }

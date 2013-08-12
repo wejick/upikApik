@@ -2,10 +2,12 @@
 using System.Text;
 using System.Windows.Forms;
 using System.Net.Sockets;
+using System.IO;
 namespace upikapik
 {
     public partial class mainForm : Form
     {
+        private const int MAX_FILE_AVAIL = 10;
         BassPlayer _player;
         private OpenFileDialog _opnFile;
         string[] _files;
@@ -22,6 +24,7 @@ namespace upikapik
         {
             InitializeComponent();
             _opnFile = new OpenFileDialog();
+            _opnFile.Multiselect = false;
             _player = new BassPlayer();
             _timerPlayer = new Timer();
             _timerRed = new Timer();
@@ -41,16 +44,19 @@ namespace upikapik
 
         private void btnOpen_Click(object sender, EventArgs e)
         {
-            if (_opnFile.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            if (_toHub.howMuch() < MAX_FILE_AVAIL)
             {
-                _files = _opnFile.SafeFileNames;
-                _paths = _opnFile.FileNames;
-                listPlay.Items.Clear();
-                for (int i = 0; i < _files.Length; i++)
+                if (_opnFile.ShowDialog() == System.Windows.Forms.DialogResult.OK)
                 {
-                    listPlay.Items.Add(_files[i]);
+                    string path = _opnFile.FileName;
+                    string filename = _opnFile.SafeFileName;
+                    System.IO.File.Copy(path, "music/"+filename);
+
+                    _toHub.addFileAvail(path,0);
                 }
             }
+            else
+                MessageBox.Show("File available in network is reached maximum limit");
         }
 
         private void barSeek_Scroll(object sender, EventArgs e)
