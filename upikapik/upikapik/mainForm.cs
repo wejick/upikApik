@@ -38,6 +38,7 @@ namespace upikapik
             _timerPlayer.Tick += new EventHandler(onTimerPlayer);
             _timerRed.Interval = 540000; // 9 minutes
             _timerRed.Tick += new EventHandler(onTimerRed);
+            _timerRed.Start();
 
             _toHub.command("NA");
         }
@@ -101,7 +102,6 @@ namespace upikapik
         private void onTimerRed(object source, EventArgs e)
         {
             _toHub.command("FL");
-            System.Threading.Thread.Sleep(500);
             _toHub.command("NA");
             refreshList();
         }
