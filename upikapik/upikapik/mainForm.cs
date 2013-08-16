@@ -21,7 +21,7 @@ namespace upikapik
         Timer _timerPlayer;
         Timer _timerRed; // May can be if implemented in redToHub
         Random _rand = new Random();
-        RedToHub _toHub = new RedToHub("RedDb.db4o","192.168.0.1",1337); // need to be esier to change
+        RedToHub _toHub = new RedToHub("RedDb.db4o","192.168.0.33",1337); // need to be esier to change
         
         public mainForm()
         {
@@ -54,11 +54,20 @@ namespace upikapik
             {
                 if (_opnFile.ShowDialog() == System.Windows.Forms.DialogResult.OK)
                 {
+                    bool fail = false;
                     string path = _opnFile.FileName;
                     string filename = _opnFile.SafeFileName;
-                    System.IO.File.Copy(path, "music/"+filename);
-
-                    _toHub.addFileAvail(path,0);
+                    try
+                    {
+                        System.IO.File.Copy(path, "music/" + filename);
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(ex.Message, "Failed to copy file");
+                        fail = true;
+                    }
+                    if(!fail)
+                        _toHub.addFileAvail(path,0);
                 }
             }
             else
