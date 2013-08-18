@@ -4,6 +4,7 @@ using System.Windows.Forms;
 using System.Net.Sockets;
 using System.IO;
 using System.Collections.Generic;
+//using System.Threading;
 namespace upikapik
 {
     public partial class mainForm : Form
@@ -11,18 +12,24 @@ namespace upikapik
         private const int MAX_FILE_AVAIL = 10;
         BassPlayer _player;
         private OpenFileDialog _opnFile;
-//        string[] _files;
+
+        // bass player things
         string[] _paths;
         int _timeTotal;
         int _timeCurrent;
         int _indexOfPlayedFile;
         bool _shuffle = false;
         List<file_list> playList = new List<file_list>();
+        Random _rand = new Random();
+
+        // timer
         Timer _timerPlayer;
         Timer _timerRed; // May can be if implemented in redToHub
-        Random _rand = new Random();
+
+        // another HMR component
         RedToHub _toHub = new RedToHub("RedDb.db4o","192.168.0.33",1337); // need to be esier to change
-        
+        RedServ _server = new RedServ("127.0.0.1", 1337);
+        System.Threading.Thread tRedServ;
         public mainForm()
         {
             InitializeComponent();
@@ -41,6 +48,9 @@ namespace upikapik
             _timerRed.Start();
 
             _toHub.command("NA");
+            tRedServ = new System.Threading.Thread(() => { _server.listen(); });
+            tRedServ.Start();
+            //_server.listen();
         }
                 
         private void btnPlay_Click(object sender, EventArgs e)
@@ -169,6 +179,12 @@ namespace upikapik
             {
                 listPlay.Items.Add(item.nama);
             }
+        }
+
+        private void mainForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            //_server.enable = false;
+            ((IDisposable)_server).Dispose();
         }
     }
 }
