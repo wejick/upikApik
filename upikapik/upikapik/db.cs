@@ -38,4 +38,16 @@ namespace upikapik
     {
         string trackerIp { get; set; }
     }
+    class block_req
+    {
+        public bool is_finnish;
+        public byte[] buffer;
+        public int start_post;
+        public block_req(bool is_finnish, int buffer_size, int start_post)
+        {
+            this.is_finnish = is_finnish;
+            buffer = new byte[buffer_size];
+            this.start_post = start_post;
+        }
+    }
 }
