@@ -207,6 +207,7 @@
             this.Controls.Add(this.lytMain);
             this.Name = "mainForm";
             this.Text = "UpikApik";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.mainForm_FormClosing);
             this.Load += new System.EventHandler(this.Form1_Load);
             this.lytMain.ResumeLayout(false);
             this.lytMain.PerformLayout();
