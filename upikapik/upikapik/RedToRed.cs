@@ -123,4 +123,76 @@ namespace upikapik
             allDone.Set();
         }
     }
+    class RequestProp
+    {
+        public TcpClient client;
+        public NetworkStream stream;
+        public string filename;
+        public int startPost;
+        public int blockSize;
+        public byte[] receiveBuffer;
+    }
+    class AsynchRedStream
+    {
+        private IPEndPoint ipServer;
+        private int port;
+        private int MAX_REQUEST = 4;
+        private int numOfRequest = 0;
+        private int startpost;
+        private ManualResetEvent allDone = new ManualResetEvent(false);
+        public AsynchRedStream()
+        {
+            ipServer = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 1337);
+        }
+        public AsynchRedStream(string ipAddress, int port)
+        {
+            ipServer = new IPEndPoint(IPAddress.Parse(ipAddress), port);
+        }
+        public void startStream(string id_file)
+        {
+            IPEndPoint host = new IPEndPoint(IPAddress.Parse("192.168.0.7"), 1337);
+            startConnect(host, "Kalimba.mp3", 0, 400);
+            startConnect(host, "Kalimba.mp3", 401, 400);
+        }
+        private void startConnect(IPEndPoint peer, string filename, int startpost, int blockSize)
+        {
+            RequestProp req = new RequestProp();
+            req.client = new TcpClient();
+            req.filename = filename;
+            req.startPost = startpost;
+            req.blockSize = blockSize;
+
+            allDone.Reset();
+            req.client.BeginConnect(peer.Address, peer.Port, connectCallback, req);
+            allDone.WaitOne();
+
+        }
+        private void connectCallback(IAsyncResult result)
+        {
+            allDone.Set();
+            RequestProp req = (RequestProp)result.AsyncState;
+            req.client.EndConnect(result);
+            req.stream = req.client.GetStream();
+
+            byte[] sendBuffer = Encoding.UTF8.GetBytes("GET;" + req.filename + ";" + req.startPost + ";" + req.blockSize + ";");
+            req.receiveBuffer = new byte[req.blockSize];
+            req.stream.Write(sendBuffer, 0, sendBuffer.Length);
+            Thread.Sleep(100);
+            req.stream.BeginRead(req.receiveBuffer, 0, req.blockSize, readCallback, req);
+            printBlocks(req.receiveBuffer);
+        }
+        // at this 
+        private void readCallback(IAsyncResult result)
+        {
+            RequestProp req = (RequestProp)result.AsyncState;
+            req.stream.EndRead(result);
+            byte[] receiveBuffer = new byte[req.blockSize];
+            receiveBuffer = req.receiveBuffer;
+            printBlocks(receiveBuffer);
+        }
+        private void printBlocks(byte[] blocks)
+        {
+            Console.WriteLine(System.Text.Encoding.UTF8.GetString(blocks));
+        }
+    }
 }
