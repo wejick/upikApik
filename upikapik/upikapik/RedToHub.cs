@@ -66,8 +66,8 @@ namespace upikapik
         {
             //TcpClient red = new TcpClient(server);
             TcpClient red = new TcpClient();
-            red.SendTimeout = 2000;
-            red.ReceiveTimeout = 2000;
+            red.SendTimeout = 3000;
+            red.ReceiveTimeout = 3000;
             try
             {
                 red.Connect(server);
