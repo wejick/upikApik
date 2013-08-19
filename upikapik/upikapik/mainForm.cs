@@ -28,7 +28,8 @@ namespace upikapik
 
         // another HMR component
         RedToHub _toHub = new RedToHub("RedDb.db4o","192.168.0.33",1337); // need to be esier to change
-        RedServ _server = new RedServ("127.0.0.1", 1337);
+        //RedServ _server = new RedServ("127.0.0.1", 1337);
+        AsynchRedServ _server = new AsynchRedServ("127.0.0.1", 1337);
         System.Threading.Thread tRedServ;
         public mainForm()
         {
@@ -48,9 +49,10 @@ namespace upikapik
             _timerRed.Start();
 
             _toHub.command("NA");
-            tRedServ = new System.Threading.Thread(() => { _server.listen(); });
+            
+            tRedServ = new System.Threading.Thread(() => { _server.startListening(); });
             tRedServ.Start();
-            //_server.listen();
+            //_server.startListening();
         }
                 
         private void btnPlay_Click(object sender, EventArgs e)
@@ -183,7 +185,7 @@ namespace upikapik
 
         private void mainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            //_server.enable = false;
+            _server.enable = false;
             ((IDisposable)_server).Dispose();
         }
     }
