@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net.Sockets;
 using System.Net;
 using System.Threading;
@@ -125,47 +126,69 @@ namespace upikapik
     }
     class RequestProp
     {
+        public IPEndPoint peer;
         public TcpClient client;
         public NetworkStream stream;
         public string filename;
-        public int startPost;
+        // it must be adjusted, because file seeking add 1 automatically but socket reading nope
+        // Adjust by subtract it with 1 when write to file
+        public int startPost; 
         public int blockSize;
         public byte[] receiveBuffer;
     }
     class AsynchRedStream
     {
-        private IPEndPoint ipServer;
-        private int port;
-        private int MAX_REQUEST = 4;
-        private int numOfRequest = 0;
+        private const int MAX_REQUEST = 4;
         private int startpost;
+        
         private ManualResetEvent allDone = new ManualResetEvent(false);
+        private object createReqLocker = new object();
+        private bool enable = false ;
+
+        Timer startTimer;
+        private Queue<RequestProp> requestQueue = new Queue<RequestProp>(MAX_REQUEST);
+        private Queue<string> hosts;
+ 
         public AsynchRedStream()
         {
-            ipServer = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 1337);
+
         }
-        public AsynchRedStream(string ipAddress, int port)
+        public void startStream(int id_file)
         {
-            ipServer = new IPEndPoint(IPAddress.Parse(ipAddress), port);
+            string filename = getFilename(id_file);
+            int blocksize = getBlockSize(id_file);
+            int filesize = getFileSize(id_file);
+
+            enable = true;
+            startTimer = new Timer(x => { startTimerCallback(filename,blocksize,filesize); }, null, 0, 100); // is it better than forever while?
         }
-        public void startStream(string id_file)
+        public void startTimerCallback(string filename, int blocksize, int filesize)
         {
-            IPEndPoint host = new IPEndPoint(IPAddress.Parse("192.168.0.7"), 1337);
-            startConnect(host, "Kalimba.mp3", 0, 400);
-            startConnect(host, "Kalimba.mp3", 401, 400);
+            if(enable)
+            {
+                if (requestQueue.Count != 4)
+                {
+                    if ((startpost + blocksize) >= filesize)
+                    {
+                        stopStream();
+                        startTimer.Dispose();
+                    }
+                }
+                else
+                    Thread.Sleep(50);
+            }
         }
-        private void startConnect(IPEndPoint peer, string filename, int startpost, int blockSize)
+        public void stopStream()
         {
-            RequestProp req = new RequestProp();
+            enable = false;
+        }
+        private void startConnect(RequestProp req)
+        {
             req.client = new TcpClient();
-            req.filename = filename;
-            req.startPost = startpost;
-            req.blockSize = blockSize;
 
             allDone.Reset();
-            req.client.BeginConnect(peer.Address, peer.Port, connectCallback, req);
+            req.client.BeginConnect(req.peer.Address, req.peer.Port, connectCallback, req);
             allDone.WaitOne();
-
         }
         private void connectCallback(IAsyncResult result)
         {
@@ -188,11 +211,50 @@ namespace upikapik
             req.stream.EndRead(result);
             byte[] receiveBuffer = new byte[req.blockSize];
             receiveBuffer = req.receiveBuffer;
-            printBlocks(receiveBuffer);
+            requestQueue.Enqueue(req);
         }
         private void printBlocks(byte[] blocks)
         {
             Console.WriteLine(System.Text.Encoding.UTF8.GetString(blocks));
+        }
+        private RequestProp createReq(string filename, int blocksize, int filesize)
+        {
+            RequestProp req = new RequestProp();
+            req.blockSize = blocksize;
+            req.filename = filename;
+            req.startPost = startpost;
+            req.peer.Port = 1337; // hard coded port
+
+            lock (createReqLocker)
+            {
+                if ((startpost + blocksize) > filesize)
+                    blocksize = filesize - startpost + 1;
+                else
+                    startpost = startpost + blocksize + 1;
+                
+                // get the address then enqueue it again
+                req.peer.Address = IPAddress.Parse(hosts.Dequeue());
+                hosts.Enqueue(req.peer.Address.ToString());
+            }
+            return req;
+        }
+        private string getFilename(int id_file)
+        {
+            return "stab";
+        }
+        private int getFileSize(int id_file)
+        {
+            return 0;
+        }
+        private int getBlockSize(int id_file)
+        {
+            return 0;
+        }
+        private string[] getHostsAvail(string id_file)
+        {
+            string[] hosts = new string[10];
+
+            return hosts;
         }
     }
 }
