@@ -333,7 +333,7 @@ namespace upikapik
         {
             try
             {
-                file.Seek(req.startPost, 0);
+                file.Seek(req.startPost-1, 0);
                 file.BeginWrite(req.receiveBuffer, 0, req.receiveBuffer.Length, writeCallback, null);
             }
             catch (IOException ex)
