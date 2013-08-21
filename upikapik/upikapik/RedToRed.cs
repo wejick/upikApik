@@ -5,8 +5,6 @@ using System.Net;
 using System.Threading;
 using System.Text;
 using System.IO;
-using Db4objects.Db4o;
-using Db4objects.Db4o.Linq;
 using System.IO;
 namespace upikapik
 {
@@ -145,7 +143,6 @@ namespace upikapik
     }
     class AsynchRedStream
     {
-        IObjectContainer db;
         file_list fileinfo;
 
         private const int MAX_REQUEST = 4;
@@ -164,14 +161,13 @@ namespace upikapik
         FileStream file = null;
         ManualResetEvent manualEvent = new ManualResetEvent(false);
 
-        public AsynchRedStream(string dbName)
+        public AsynchRedStream()
         {
-            db = Db4oEmbedded.OpenFile(dbName);
         }
-        public void startStream(int id_file, ref byte[] bassBuffer)
+        public void startStream(int id_file, ref byte[] bassBuffer, file_list fileinfo)
         {
+            this.fileinfo = fileinfo;
             this.id_file = id_file;
-            getFileInfo(id_file);
             string filename = getFilename();
             int blocksize = getBlockSize();
             int filesize = getFileSize();
@@ -292,14 +288,6 @@ namespace upikapik
             }
             return req;
         }
-        private void getFileInfo(int id_file)
-        {
-            dynamic file = from file_list f in db where f.id_file.Equals(id_file) select f;
-            foreach (var item in file)
-            {
-                fileinfo = item;
-            }
-        }
         private string getFilename()
         {
             return fileinfo.nama;
@@ -349,8 +337,6 @@ namespace upikapik
         public void endEverything()
         {
             file.Close();
-            ((IDisposable)db).Dispose();
-
         }
         public void updateHosts()
         {
