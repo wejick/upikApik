@@ -7,7 +7,7 @@ using System.Text;
 using System.IO;
 using Db4objects.Db4o;
 using Db4objects.Db4o.Linq;
-
+using System.IO;
 namespace upikapik
 {
     class AsynchRedServ : IDisposable
@@ -160,7 +160,10 @@ namespace upikapik
         private Queue<RequestProp> writeQueue = new Queue<RequestProp>(MAX_REQUEST);
         private Queue<RequestProp> failedRequestQueue = new Queue<RequestProp>();
         private Queue<Hosts> hosts;
- 
+
+        FileStream file = null;
+        ManualResetEvent manualEvent = new ManualResetEvent(false);
+
         public AsynchRedStream(string dbName)
         {
             db = Db4oEmbedded.OpenFile(dbName);
@@ -173,6 +176,8 @@ namespace upikapik
             int blocksize = getBlockSize();
             int filesize = getFileSize();
 
+            file = new FileStream("music/" + filename, FileMode.OpenOrCreate, FileAccess.Write);
+
             enable = true;
             startTimer = new Timer(x => { startTimerCallback(filename,blocksize,filesize); }, null, 0, 100); // is it better than forever while?
         }
@@ -180,6 +185,10 @@ namespace upikapik
         {
             if(enable)
             {
+                if (writeQueue.Count != 0)
+                {
+                    writeToFile(writeQueue.Dequeue());
+                }
                 if (writeQueue.Count != 4)
                 {
                     if ((startpost + blocksize) >= filesize)
@@ -313,16 +322,39 @@ namespace upikapik
                 hosts.Enqueue(item);
             }
         }
-        public void updateHosts()
-        {
-            getHostsAvail(id_file);
-        }
         private void enqueueFailedRequest(RequestProp req)
         {
             Hosts host = hosts.Dequeue(); 
             req.peer = host.peer;
             hosts.Enqueue(host);
             failedRequestQueue.Enqueue(req);
+        }
+        private void writeToFile(RequestProp req)
+        {
+            try
+            {
+                file.Seek(req.startPost, 0);
+                file.BeginWrite(req.receiveBuffer, 0, req.receiveBuffer.Length, writeCallback, null);
+            }
+            catch (IOException ex)
+            {
+                
+            }
+        }
+        private void writeCallback(IAsyncResult result)
+        {
+            file.EndWrite(result);
+            // here we write to file_available in db
+        }
+        public void endEverything()
+        {
+            file.Close();
+            ((IDisposable)db).Dispose();
+
+        }
+        public void updateHosts()
+        {
+            getHostsAvail(id_file);
         }
     }
 }
