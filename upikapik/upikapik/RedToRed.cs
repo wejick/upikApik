@@ -5,6 +5,8 @@ using System.Net;
 using System.Threading;
 using System.Text;
 using System.IO;
+using Db4objects.Db4o;
+using Db4objects.Db4o.Linq;
 
 namespace upikapik
 {
@@ -132,32 +134,43 @@ namespace upikapik
         public string filename;
         // it must be adjusted, because file seeking add 1 automatically but socket reading nope
         // Adjust by subtract it with 1 when write to file
-        public int startPost; 
+        public int startPost;
         public int blockSize;
         public byte[] receiveBuffer;
     }
+    class Hosts
+    {
+        public IPEndPoint peer;
+        public int blockAvail;
+    }
     class AsynchRedStream
     {
+        IObjectContainer db;
+        file_list fileinfo;
+
         private const int MAX_REQUEST = 4;
         private int startpost;
-        
+        int id_file;
+
         private ManualResetEvent allDone = new ManualResetEvent(false);
         private object createReqLocker = new object();
         private bool enable = false ;
 
         Timer startTimer;
         private Queue<RequestProp> requestQueue = new Queue<RequestProp>(MAX_REQUEST);
-        private Queue<string> hosts;
+        private Queue<Hosts> hosts;
  
-        public AsynchRedStream()
+        public AsynchRedStream(string dbName)
         {
-
+            db = Db4oEmbedded.OpenFile(dbName);
         }
-        public void startStream(int id_file)
+        public void startStream(int id_file, ref byte[] bassBuffer)
         {
-            string filename = getFilename(id_file);
-            int blocksize = getBlockSize(id_file);
-            int filesize = getFileSize(id_file);
+            this.id_file = id_file;
+            getFileInfo(id_file);
+            string filename = getFilename();
+            int blocksize = getBlockSize();
+            int filesize = getFileSize();
 
             enable = true;
             startTimer = new Timer(x => { startTimerCallback(filename,blocksize,filesize); }, null, 0, 100); // is it better than forever while?
@@ -233,28 +246,50 @@ namespace upikapik
                     startpost = startpost + blocksize + 1;
                 
                 // get the address then enqueue it again
-                req.peer.Address = IPAddress.Parse(hosts.Dequeue());
-                hosts.Enqueue(req.peer.Address.ToString());
+                // if block available from host smaller than requested, get another host
+                while (true)
+                {
+                    Hosts peer = hosts.Dequeue();
+                    hosts.Enqueue(peer);
+                    if (peer.blockAvail >= startpost + blocksize)
+                        break;
+                }
             }
             return req;
         }
-        private string getFilename(int id_file)
+        private void getFileInfo(int id_file)
         {
-            return "stab";
+            dynamic file = from file_list f in db where f.id_file.Equals(id_file) select f;
+            foreach (var item in file)
+            {
+                fileinfo = item;
+            }
         }
-        private int getFileSize(int id_file)
+        private string getFilename()
         {
-            return 0;
+            return fileinfo.nama;
         }
-        private int getBlockSize(int id_file)
+        private int getFileSize()
         {
-            return 0;
+            return fileinfo.size;
         }
-        private string[] getHostsAvail(string id_file)
+        private int getBlockSize()
         {
-            string[] hosts = new string[10];
-
-            return hosts;
+            int frameSize = (144 * fileinfo.bitrate * 1000) / fileinfo.samplerate;
+            return (1500 / frameSize) * frameSize; 
+        }
+        private void getHostsAvail(int id_file)
+        {
+            hosts.Clear();
+            dynamic H = from file_host_rel f in db where f.id_file.Equals(id_file) select f;
+            foreach (var item in H)
+            {
+                hosts.Enqueue(item);
+            }
+        }
+        public void updateHosts()
+        {
+            getHostsAvail(id_file);
         }
     }
 }
