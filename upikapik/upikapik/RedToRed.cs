@@ -157,7 +157,8 @@ namespace upikapik
         private bool enable = false ;
 
         Timer startTimer;
-        private Queue<RequestProp> requestQueue = new Queue<RequestProp>(MAX_REQUEST);
+        private Queue<RequestProp> writeQueue = new Queue<RequestProp>(MAX_REQUEST);
+        private Queue<RequestProp> failedRequestQueue = new Queue<RequestProp>();
         private Queue<Hosts> hosts;
  
         public AsynchRedStream(string dbName)
@@ -179,13 +180,17 @@ namespace upikapik
         {
             if(enable)
             {
-                if (requestQueue.Count != 4)
+                if (writeQueue.Count != 4)
                 {
                     if ((startpost + blocksize) >= filesize)
                     {
                         stopStream();
                         startTimer.Dispose();
                     }
+                    else if(failedRequestQueue.Count!=0)
+                        startConnect(failedRequestQueue.Dequeue());
+                    else
+                        startConnect(createReq(filename,blocksize,filesize));
                 }
                 else
                     Thread.Sleep(50);
@@ -200,7 +205,14 @@ namespace upikapik
             req.client = new TcpClient();
 
             allDone.Reset();
-            req.client.BeginConnect(req.peer.Address, req.peer.Port, connectCallback, req);
+            try
+            {
+                req.client.BeginConnect(req.peer.Address, req.peer.Port, connectCallback, req);
+            }
+            catch (SocketException ex)
+            {
+                enqueueFailedRequest(req);
+            }
             allDone.WaitOne();
         }
         private void connectCallback(IAsyncResult result)
@@ -212,9 +224,23 @@ namespace upikapik
 
             byte[] sendBuffer = Encoding.UTF8.GetBytes("GET;" + req.filename + ";" + req.startPost + ";" + req.blockSize + ";");
             req.receiveBuffer = new byte[req.blockSize];
-            req.stream.Write(sendBuffer, 0, sendBuffer.Length);
+            try
+            {
+                req.stream.Write(sendBuffer, 0, sendBuffer.Length);
+            }
+            catch (IOException ex)
+            {
+                enqueueFailedRequest(req);
+            }
             Thread.Sleep(100);
-            req.stream.BeginRead(req.receiveBuffer, 0, req.blockSize, readCallback, req);
+            try
+            {
+                req.stream.BeginRead(req.receiveBuffer, 0, req.blockSize, readCallback, req);
+            }
+            catch (IOException ex)
+            {
+                enqueueFailedRequest(req);
+            }
             printBlocks(req.receiveBuffer);
         }
         // at this 
@@ -224,7 +250,7 @@ namespace upikapik
             req.stream.EndRead(result);
             byte[] receiveBuffer = new byte[req.blockSize];
             receiveBuffer = req.receiveBuffer;
-            requestQueue.Enqueue(req);
+            writeQueue.Enqueue(req);
         }
         private void printBlocks(byte[] blocks)
         {
@@ -290,6 +316,13 @@ namespace upikapik
         public void updateHosts()
         {
             getHostsAvail(id_file);
+        }
+        private void enqueueFailedRequest(RequestProp req)
+        {
+            Hosts host = hosts.Dequeue(); 
+            req.peer = host.peer;
+            hosts.Enqueue(host);
+            failedRequestQueue.Enqueue(req);
         }
     }
 }
