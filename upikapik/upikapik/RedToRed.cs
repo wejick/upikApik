@@ -351,6 +351,7 @@ namespace upikapik
         {
             file.Close();
         }
+
         public void getHostsAvail(Queue<Hosts> hosts)
         {
             this.hosts.Clear();
