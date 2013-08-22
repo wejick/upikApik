@@ -5,7 +5,6 @@ using System.Net;
 using System.Threading;
 using System.Text;
 using System.IO;
-using System.IO;
 namespace upikapik
 {
     class AsynchRedServ : IDisposable
@@ -141,6 +140,8 @@ namespace upikapik
         public IPEndPoint peer;
         public int blockAvail;
     }
+    // declare it and use startstream
+    // and then stopstream
     class AsynchRedStream
     {
         file_list fileinfo;
@@ -149,8 +150,11 @@ namespace upikapik
         private int startpost;
         int id_file;
 
+        //byte[] bassBuffer;
+
         private ManualResetEvent allDone = new ManualResetEvent(false);
         private object createReqLocker = new object();
+        private object writeByteLocker = new object();
         private bool enable = false ;
 
         Timer startTimer;
@@ -171,6 +175,7 @@ namespace upikapik
             string filename = getFilename();
             int blocksize = getBlockSize();
             int filesize = getFileSize();
+            //this.bassBuffer = bassBuffer;
 
             file = new FileStream("music/" + filename, FileMode.OpenOrCreate, FileAccess.Write);
 
@@ -301,15 +306,7 @@ namespace upikapik
             int frameSize = (144 * fileinfo.bitrate * 1000) / fileinfo.samplerate;
             return (1500 / frameSize) * frameSize; 
         }
-        private void getHostsAvail(int id_file)
-        {
-            hosts.Clear();
-            dynamic H = from file_host_rel f in db where f.id_file.Equals(id_file) select f;
-            foreach (var item in H)
-            {
-                hosts.Enqueue(item);
-            }
-        }
+       
         private void enqueueFailedRequest(RequestProp req)
         {
             Hosts host = hosts.Dequeue(); 
@@ -331,16 +328,33 @@ namespace upikapik
         }
         private void writeCallback(IAsyncResult result)
         {
+            RequestProp req = (RequestProp)result;
             file.EndWrite(result);
-            // here we write to file_available in db
+
+            // here we write to file_available in db'
+            // write to bass buffer
+//            writeToBuffer(req.startPost, req.receiveBuffer, ref bassBuffer);
+        }
+        private void writeToBuffer(int startpost, byte[] data, ref byte[] buffer)
+        {
+            lock (writeByteLocker)
+            {
+                int y = 0;
+                for (int i = startpost; i < data.Length; i++)
+                {
+                    buffer[i] = data[y];
+                    y++;
+                }
+            }
         }
         public void endEverything()
         {
             file.Close();
         }
-        public void updateHosts()
+        public void getHostsAvail(Queue<Hosts> hosts)
         {
-            getHostsAvail(id_file);
+            this.hosts.Clear();
+            this.hosts = hosts;
         }
     }
 }
