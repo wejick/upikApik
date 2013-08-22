@@ -215,5 +215,21 @@ namespace upikapik
             }
             this.command("UP;" + fileIdInHub + ";" + file.block_avail);
         }
+        public Queue<Hosts> getAvailableHost(int id_file)
+        {
+            Hosts host = new Hosts;
+            Queue<Hosts> hosts = new Queue<Hosts>();
+
+            dynamic obj = from file_host_rel f in db where f.id_file.Equals(id_file) select f;
+            foreach(var item in obj)
+            {
+                host.blockAvail = item.block_avail;
+                host.peer.Address = IPAddress.Parse(item.ip);
+                host.peer.Port = 1337;
+
+                hosts.Enqueue(host);
+            }
+            return new Queue<Hosts>();
+        }
     }
 }
