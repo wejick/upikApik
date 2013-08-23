@@ -220,14 +220,28 @@ namespace upikapik
             Hosts host = new Hosts();
             Queue<Hosts> hosts = new Queue<Hosts>();
 
+            String strHostName = Dns.GetHostName();
+            IPHostEntry ipEntry = Dns.GetHostEntry(strHostName);
+            IPAddress[] addr = ipEntry.AddressList;
+
             dynamic obj = from file_host_rel f in db where f.id_file.Equals(id_file) select f;
             foreach(var item in obj)
             {
-                host.blockAvail = item.block_avail;
-                host.peer.Address = IPAddress.Parse(item.ip);
-                host.peer.Port = 1337;
+                foreach (IPAddress address in addr)
+                {
+                    if (address.Address == item.ip)
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        host.blockAvail = item.block_avail;
+                        host.peer.Address = IPAddress.Parse(item.ip);
+                        host.peer.Port = 1337;
 
-                hosts.Enqueue(host);
+                        hosts.Enqueue(host);
+                    }
+                }
             }
             return new Queue<Hosts>();
         }
