@@ -229,7 +229,7 @@ namespace upikapik
             {
                 foreach (IPAddress address in addr)
                 {
-                    if (address.Address == item.ip)
+                    if (address.Equals(item.ip))
                     {
                         break;
                     }
