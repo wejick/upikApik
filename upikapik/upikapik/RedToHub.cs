@@ -217,7 +217,7 @@ namespace upikapik
         }
         public Queue<Hosts> getAvailableHost(int id_file)
         {
-            Hosts host = new Hosts;
+            Hosts host = new Hosts();
             Queue<Hosts> hosts = new Queue<Hosts>();
 
             dynamic obj = from file_host_rel f in db where f.id_file.Equals(id_file) select f;
@@ -230,6 +230,28 @@ namespace upikapik
                 hosts.Enqueue(host);
             }
             return new Queue<Hosts>();
+        }
+        public void updateFileInfo(int id_file, int blockAvailable)
+        {
+            file_available file = new file_available();
+            dynamic f = from file_list g in db where g.id_file.Equals(id_file) select g;
+            foreach (var item in f)
+            {
+                db.Delete(item);
+
+                file.id_file = id_file;
+                file.nama = item.nama;
+                file.samplerate = item.samplerate;
+                file.bitrate = item.bitrate;
+                file.size = item.size;
+                if (blockAvailable == item.size)
+                {
+                    file.full = true;
+                }
+                else
+                    file.full = false;
+                db.Store(item);
+            }
         }
     }
 }
