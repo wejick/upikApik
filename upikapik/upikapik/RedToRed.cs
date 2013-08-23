@@ -159,6 +159,7 @@ namespace upikapik
 
         Timer startTimer;
         private Queue<RequestProp> writeQueue = new Queue<RequestProp>(MAX_REQUEST);
+        private Queue<RequestProp> bassBufferQueue = new Queue<RequestProp>();
         private Queue<RequestProp> failedRequestQueue = new Queue<RequestProp>();
         private Queue<Hosts> hosts;
 
@@ -261,6 +262,7 @@ namespace upikapik
             byte[] receiveBuffer = new byte[req.blockSize];
             receiveBuffer = req.receiveBuffer;
             writeQueue.Enqueue(req);
+            bassBufferQueue.Enqueue(req);
         }
         private void printBlocks(byte[] blocks)
         {
@@ -330,19 +332,16 @@ namespace upikapik
         {
             RequestProp req = (RequestProp)result;
             file.EndWrite(result);
-
-            // here we write to file_available in db'
-            // write to bass buffer
-//            writeToBuffer(req.startPost, req.receiveBuffer, ref bassBuffer);
         }
-        private void writeToBuffer(int startpost, byte[] data, ref byte[] buffer)
+        public void writeToBuffer(ref byte[] buffer)
         {
-            lock (writeByteLocker)
+            while (bassBufferQueue.Count != 0)
             {
+                RequestProp req = bassBufferQueue.Dequeue();
                 int y = 0;
-                for (int i = startpost; i < data.Length; i++)
+                for (int i = req.startPost; i < req.receiveBuffer.Length; i++)
                 {
-                    buffer[i] = data[y];
+                    buffer[i] = req.receiveBuffer[y];
                     y++;
                 }
             }
