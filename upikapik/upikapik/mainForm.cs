@@ -71,7 +71,7 @@ namespace upikapik
                     string filename = _opnFile.SafeFileName;
                     try
                     {
-                        System.IO.File.Copy(path, "music/" + filename);
+                        System.IO.File.Copy(path, Path.Combine(Directory.GetCurrentDirectory(),"music",filename));
                     }
                     catch (Exception ex)
                     {
