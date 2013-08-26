@@ -205,6 +205,7 @@ namespace upikapik
                 if(item.nama == file.nama)
                     fileIdInHub = item.id_file;
             }
+            db.Store(file);
             this.command("UP;" + fileIdInHub + ";" + file.block_avail);
         }
         public Queue<Hosts> getAvailableHost(int id_file)
