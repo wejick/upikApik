@@ -109,17 +109,19 @@ namespace upikapik
                 }
                 stream.Write(buffer, 0, buffer.Length);
                 // clear buffer
-                buffer = new Byte[1024];
-                int byteCnt = stream.Read(buffer, 0, buffer.Length);
                 if (parsedCommand[0] == "FL" || parsedCommand[0] == "FD")
+                {
+                    buffer = new Byte[1024];
+                    int byteCnt = stream.Read(buffer, 0, buffer.Length);
                     response = System.Text.Encoding.UTF8.GetString(buffer);
-                if (parsedCommand[0] == "FL")
-                {
-                    comFileList(response);
-                }
-                if (parsedCommand[0] == "FD")
-                {
-                    comFileDetail(response, Convert.ToInt16(parsedCommand[1]));
+                    if (parsedCommand[0] == "FL")
+                    {
+                        comFileList(response);
+                    }
+                    if (parsedCommand[0] == "FD")
+                    {
+                        comFileDetail(response, Convert.ToInt16(parsedCommand[1]));
+                    }
                 }
                 stream.Close();
                 red.Close();
