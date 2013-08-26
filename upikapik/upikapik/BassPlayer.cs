@@ -134,10 +134,10 @@ namespace upikapik
         }
         // control the stream
         /*
-         * < Play the stream >
+         * < Play the stream from file>
          * @param path of source file
          * */
-        public void play(string path)
+        public void play_local(string path)
         {
             this.setPath(path);
             BASSActive status;
@@ -154,6 +154,14 @@ namespace upikapik
             }
             else
                 throw new System.InvalidOperationException("Can't open file to play");
+        }
+        /*
+         * < Play the stream from buffer>
+         * @param buffer of played file
+         * */
+        public void play_buffer(ref byte[] buffer)
+        {
+
         }
         /*
          * < Pause or resume the stream according to current state of stream >
