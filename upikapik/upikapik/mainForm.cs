@@ -15,6 +15,7 @@ namespace upikapik
 
         // bass player things
         string[] _paths;
+        file_list _current_file;
         int _timeTotal;
         int _timeCurrent;
         int _indexOfPlayedFile;
@@ -96,6 +97,8 @@ namespace upikapik
             if(listPlay.Items.Count != 0 )
             {
                 _indexOfPlayedFile = listPlay.SelectedIndex;
+                // set current file
+                _current_file = playList.Find(p => p.nama.Equals(listPlay.SelectedItem));
                 play();
                 _timerPlayer.Start();
             }
@@ -139,11 +142,14 @@ namespace upikapik
 
         private void play()
         {
-            _player.play(_paths[_indexOfPlayedFile]);
-            _timeTotal = _player.getLenSec();
-            barSeek.SetRange(0, _timeTotal);
+            //int available_block = _toHub.getBlockAvailableSize(_current_file.id_file);
+            if (_toHub.isFull(_current_file.nama))
+            {
+                _player.play_local("music\\"+_current_file.nama);
+                _timeTotal = _player.getLenSec();
+                barSeek.SetRange(0, _timeTotal);                
+            }
             this.Text = "UpikApik : " + _player.getFileName();
-
             barVol.Value = _player.getVolume();
         }
 
