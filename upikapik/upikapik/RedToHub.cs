@@ -74,7 +74,6 @@ namespace upikapik
             }
             catch (SocketException ex)
             {
-                Console.WriteLine(ex.ErrorCode + " " + ex.InnerException);
                 connect = false;
             }
             if (connect == true)
@@ -142,7 +141,6 @@ namespace upikapik
             {
                 db.Store(item);
             }
-            Console.WriteLine(response);
         }
         // send command and retrieve file detail from hub
         private void comFileDetail(string response, int id)
@@ -158,15 +156,10 @@ namespace upikapik
             // insert all from response
             foreach (var item in update)
             {
-                Console.WriteLine(item.ip);
                 db.Store(item);
             }
             all_ok = from file_host_rel f in db where f.id_file.Equals(id) select f;
-            foreach (var item in all_ok)
-            {
-                Console.WriteLine(item.ip);
-            }
-            Console.WriteLine(response);
+
         }
 
         // Add entry to file_available db
@@ -201,12 +194,10 @@ namespace upikapik
         }
         public void storeFileAvailable(file_available file)
         {
-            int fileIdInHub = 0;
-            db.Store(file);
+            int fileIdInHub = 0;            
             this.command("ADD;"+file.nama+";"+file.bitrate+";"+file.samplerate+";"+file.size);
             //Thread.Sleep(500);
-            //this.command("FL");
-            Thread.Sleep(5000);
+            //this.commandSerialize("FL");
             dynamic t = from file_list sip in db select sip;
             //dynamic f = from file_list sip in db where sip.nama.Equals(file.nama) select sip;
             foreach (var item in t)
@@ -279,5 +270,17 @@ namespace upikapik
             }
             return block_avail;
         }
+        public bool isFull(string nama)
+        {
+            bool full = false;
+
+            dynamic f = from file_available g in db select g;
+            foreach (var item in f)
+            {
+                full = item.full;
+            }
+            return full;
+        }
+
     }
 }
