@@ -17,10 +17,16 @@ namespace upikapik
         string[] _paths;
         int _timeTotal;
         int _timeCurrent;
+        int _timeOfFile;
         int _indexOfPlayedFile;
         bool _shuffle = false;
         List<file_list> playList = new List<file_list>();
         Random _rand = new Random();
+
+        // current mp3 file properties
+        int bitrate = 0;
+        int samplerate = 0;
+        file_list currentFile = null;
 
         // timer
         Timer _timerPlayer;
@@ -95,7 +101,7 @@ namespace upikapik
         {
             if(listPlay.Items.Count != 0 )
             {
-                _indexOfPlayedFile = listPlay.SelectedIndex;
+                currentFile = playList.Find( x => x.nama.Equals((string)listPlay.SelectedItem));
                 play();
                 _timerPlayer.Start();
             }
@@ -136,7 +142,7 @@ namespace upikapik
         {
             _player.setVolume(barVol.Value);
         }
-
+        // not yet updated
         private void play()
         {
             _player.play(_paths[_indexOfPlayedFile]);
