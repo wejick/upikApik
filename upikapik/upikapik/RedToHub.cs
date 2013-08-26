@@ -108,7 +108,6 @@ namespace upikapik
                     buffer = System.Text.Encoding.UTF8.GetBytes(parsedCommand[0] + ";;" + parsedCommand[1] + ";;" + parsedCommand[2] + ";;" + parsedCommand[3] + ";;" + parsedCommand[4]);
                 }
                 stream.Write(buffer, 0, buffer.Length);
-
                 // clear buffer
                 buffer = new Byte[1024];
                 int byteCnt = stream.Read(buffer, 0, buffer.Length);
@@ -203,8 +202,8 @@ namespace upikapik
             int fileIdInHub = 0;
             db.Store(file);
             this.command("ADD;"+file.nama+";"+file.bitrate+";"+file.samplerate+";"+file.size);
-            Thread.Sleep(500);
-            this.command("FL");
+            //Thread.Sleep(500);
+            //this.command("FL");
             Thread.Sleep(5000);
             dynamic t = from file_list sip in db select sip;
             //dynamic f = from file_list sip in db where sip.nama.Equals(file.nama) select sip;
@@ -266,6 +265,17 @@ namespace upikapik
                     file.full = false;
                 db.Store(item);
             }
+        }
+        public int getBlockAvailableSize(int id_file)
+        {
+            file_available file = new file_available();
+            int block_avail = 0;
+            dynamic f = from file_available g in db where g.id_file.Equals(id_file) select g;
+            foreach (var item in f)
+            {
+                block_avail = item.block_avail;
+            }
+            return block_avail;
         }
     }
 }
