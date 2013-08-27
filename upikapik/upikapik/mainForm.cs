@@ -22,10 +22,12 @@ namespace upikapik
         bool _shuffle = false;
         List<file_list> playList = new List<file_list>();
         Random _rand = new Random();
+        bool local = false;
 
         // timer
         Timer _timerPlayer;
         Timer _timerRed; // May can be if implemented in redToHub
+        int intervalCounter;
 
         // another HMR component
         RedToHub _toHub = new RedToHub("RedDb.db4o","192.168.0.33",1337); // need to be esier to change
@@ -53,7 +55,6 @@ namespace upikapik
             
             tRedServ = new System.Threading.Thread(() => { _server.startListening(); });
             tRedServ.Start();
-            //_server.startListening();
         }
                 
         private void btnPlay_Click(object sender, EventArgs e)
@@ -122,11 +123,24 @@ namespace upikapik
                 _indexOfPlayedFile = _rand.Next(0, listPlay.Items.Count);
                 play();
             }
+
+            int available_block = _toHub.getBlockAvailableSize(_current_file.nama);
+            int block_size = ((144 * _current_file.bitrate * 1000) / _current_file.samplerate);
+            barProgress.Value = (_current_file.size / ((_current_file.size / block_size) * block_size)) * 100;
+
+            if (intervalCounter == 2000) // update available block after 4 second
+            {
+                if (!local)
+                {
+                    _toHub.command("UP;" + _current_file.id_file + ";" + _toHub.getBlockAvailableSize(_current_file.nama));
+                }
+            }
         }
         private void onTimerRed(object source, EventArgs e)
         {
             _toHub.command("FL");
             _toHub.command("NA");
+
             refreshList();
         }
         private TimeSpan s2t(int seconds)
@@ -142,13 +156,14 @@ namespace upikapik
 
         private void play()
         {
-            //int available_block = _toHub.getBlockAvailableSize(_current_file.id_file);
             if (_toHub.isFull(_current_file.nama))
             {
                 _player.play_local("music\\"+_current_file.nama);
                 _timeTotal = _player.getLenSec();
-                barSeek.SetRange(0, _timeTotal);                
+                local = true;
             }
+            barSeek.SetRange(0, _timeTotal);
+            barProgress.Value = 0;
             this.Text = "UpikApik : " + _player.getFileName();
             barVol.Value = _player.getVolume();
         }
