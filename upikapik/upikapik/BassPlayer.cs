@@ -16,11 +16,12 @@ namespace upikapik
     class BassPlayer
     {
         private int stream;
+        private int channel;
         private long streamLen; // stream size in byte
         private long streamPos; // stream position in byte
         private string path;
         private System.Timers.Timer mainTime;
-
+        private bool local = false;
         /*
          * < initialize everything to get bass set and ready >         * 
          * */
@@ -140,6 +141,7 @@ namespace upikapik
         public void play_local(string path)
         {
             this.setPath(path);
+            local = true;
             BASSActive status;
             status = Bass.BASS_ChannelIsActive(stream);
 
@@ -161,7 +163,19 @@ namespace upikapik
          * */
         public void play_buffer(ref byte[] buffer)
         {
-
+            local = false;
+            if (Bass.BASS_ChannelIsActive(stream) == BASSActive.BASS_ACTIVE_PLAYING || 
+                Bass.BASS_ChannelIsActive(stream) == BASSActive.BASS_ACTIVE_PLAYING)
+            {
+                Bass.BASS_StreamFree(stream);
+                Bass.BASS_StreamFree(channel);
+            }
+            if ((stream = Bass.BASS_SampleLoad(buffer,0,buffer.Length,1,BASSFlag.BASS_DEFAULT)) != 0)
+            {
+                channel = Bass.BASS_SampleGetChannel(stream, false);
+                Bass.BASS_ChannelPlay(channel, false);
+                streamLen = Bass.BASS_ChannelGetLength(channel);
+            }
         }
         /*
          * < Pause or resume the stream according to current state of stream >
@@ -169,19 +183,40 @@ namespace upikapik
          * */
         public void pause_resume()
         {
-            if (stream != 0)
+            if (local)
             {
-                // if stream playing, pause it
-                if (Bass.BASS_ChannelIsActive(stream) == BASSActive.BASS_ACTIVE_PLAYING)
+                if (stream != 0)
                 {
-                    Bass.BASS_ChannelPause(stream);
-                    mainTime.Stop();
+                    // if stream playing, pause it
+                    if (Bass.BASS_ChannelIsActive(stream) == BASSActive.BASS_ACTIVE_PLAYING)
+                    {
+                        Bass.BASS_ChannelPause(stream);
+                        mainTime.Stop();
+                    }
+                    // if stream paused, play it
+                    else if (Bass.BASS_ChannelIsActive(stream) == BASSActive.BASS_ACTIVE_PAUSED)
+                    {
+                        mainTime.Start();
+                        Bass.BASS_ChannelPlay(stream, false);
+                    }
                 }
-                // if stream paused, play it
-                else if (Bass.BASS_ChannelIsActive(stream) == BASSActive.BASS_ACTIVE_PAUSED)
+            }
+            else
+            {
+                if (channel != 0)
                 {
-                    mainTime.Start();
-                    Bass.BASS_ChannelPlay(stream, false);
+                    // if stream playing, pause it
+                    if (Bass.BASS_ChannelIsActive(channel) == BASSActive.BASS_ACTIVE_PLAYING)
+                    {
+                        Bass.BASS_ChannelPause(channel);
+                        mainTime.Stop();
+                    }
+                    // if stream paused, play it
+                    else if (Bass.BASS_ChannelIsActive(channel) == BASSActive.BASS_ACTIVE_PAUSED)
+                    {
+                        mainTime.Start();
+                        Bass.BASS_ChannelPlay(channel, false);
+                    }
                 }
             }
         }
@@ -190,7 +225,10 @@ namespace upikapik
          * */
         public void stop()
         {
-            Bass.BASS_ChannelStop(stream);
+            if(local)
+                Bass.BASS_ChannelStop(stream);
+            else
+                Bass.BASS_ChannelStop(channel);
         }
         /*
          * < Seek the stream to certain position >
@@ -198,7 +236,10 @@ namespace upikapik
          * */
         public void seek(int pos)
         {
-            Bass.BASS_ChannelSetPosition(stream, (double)pos);
+            if(local)
+                Bass.BASS_ChannelSetPosition(stream, (double)pos);
+            else
+                Bass.BASS_ChannelSetPosition(stream, (double)pos);
         }
 
         // bass spesific good routine
@@ -233,7 +274,10 @@ namespace upikapik
          * */
         private void onMainTime(object source, ElapsedEventArgs e)
         {
-            streamPos = Bass.BASS_ChannelGetPosition(stream);
+            if(local)
+                streamPos = Bass.BASS_ChannelGetPosition(stream);
+            else
+                streamPos = Bass.BASS_ChannelGetPosition(channel);
         }
     }
 }

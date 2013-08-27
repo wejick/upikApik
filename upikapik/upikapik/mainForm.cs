@@ -23,7 +23,7 @@ namespace upikapik
         List<file_list> playList = new List<file_list>();
         Random _rand = new Random();
         bool local = false;
-
+        byte[] buffer = null;
         // timer
         Timer _timerPlayer;
         Timer _timerRed; // May can be if implemented in redToHub
@@ -133,6 +133,7 @@ namespace upikapik
                 if (!local)
                 {
                     _toHub.command("UP;" + _current_file.id_file + ";" + _toHub.getBlockAvailableSize(_current_file.nama));
+                    _toHub.command("FD;" + _current_file.id_file);
                 }
             }
         }
@@ -158,9 +159,14 @@ namespace upikapik
         {
             if (_toHub.isFull(_current_file.nama))
             {
-                _player.play_local("music\\"+_current_file.nama);
+                _player.play_local("music\\" + _current_file.nama);
                 _timeTotal = _player.getLenSec();
                 local = true;
+            }
+            else
+            {
+                buffer = System.IO.File.ReadAllBytes("music\\" + _current_file.nama);
+                _player.play_buffer(ref buffer);
             }
             barSeek.SetRange(0, _timeTotal);
             barProgress.Value = 0;
