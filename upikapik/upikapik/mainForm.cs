@@ -27,7 +27,7 @@ namespace upikapik
         // timer
         Timer _timerPlayer;
         Timer _timerRed; // May can be if implemented in redToHub
-        int intervalCounter;
+        int intervalCounter = 0;
 
         // another HMR component
         RedToHub _toHub = new RedToHub("RedDb.db4o","192.168.0.33",1337); // need to be esier to change
@@ -107,6 +107,8 @@ namespace upikapik
 
         private void onTimerPlayer(object source, EventArgs e)
         {
+            intervalCounter++;
+
             _timeCurrent = _player.getPosSec();
             lblStatus.Text = "Time : " + s2t(_timeTotal) + " / " + s2t(_player.getPosSec());
             if(_timeCurrent != -1)
@@ -124,17 +126,32 @@ namespace upikapik
                 play();
             }
 
+            // pause when buffering
             int available_block = _toHub.getBlockAvailableSize(_current_file.nama);
             int block_size = ((144 * _current_file.bitrate * 1000) / _current_file.samplerate);
+            int available_sec = (int)(available_block * 0.026);
             barProgress.Value = (_current_file.size / ((_current_file.size / block_size) * block_size)) * 100;
+            if ((available_sec) < (_timeCurrent - 2) && (!_player.isPause()))
+            {
+                _player.pause_resume();
+            }
+            else if ((available_sec) < (_timeCurrent - 2) && (_player.isPause()))
+            {
 
-            if (intervalCounter == 2000) // update available block after 4 second
+            }
+            else if (_player.isPause())
+            {
+                _player.pause_resume();
+            }
+
+            if (intervalCounter == 8) // update available block after 4 second
             {
                 if (!local)
                 {
                     _toHub.command("UP;" + _current_file.id_file + ";" + _toHub.getBlockAvailableSize(_current_file.nama));
                     _toHub.command("FD;" + _current_file.id_file);
                 }
+                intervalCounter = 0;
             }
         }
         private void onTimerRed(object source, EventArgs e)
