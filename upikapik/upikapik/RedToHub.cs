@@ -165,10 +165,10 @@ namespace upikapik
         // Add entry to file_available db
         public void addFileAvail(string filePath, int block_avail = 0)
         {
-            storeFileAvailable(getInfo(filePath, block_avail));
+            storeFileAvailable(createInfo(filePath, block_avail));
         }
         // block_avail = 0 is full
-        public file_available getInfo(string filePath,int block_avail=0)
+        public file_available createInfo(string filePath,int block_avail=0)
         {
             MP3Header reader = new MP3Header();
             file_available file = new file_available();
@@ -260,11 +260,11 @@ namespace upikapik
                 db.Store(item);
             }
         }
-        public int getBlockAvailableSize(int id_file)
+        public int getBlockAvailableSize(string nama)
         {
             file_available file = new file_available();
             int block_avail = 0;
-            dynamic f = from file_available g in db where g.id_file.Equals(id_file) select g;
+            dynamic f = from file_available g in db where g.nama.Equals(nama) select g;
             foreach (var item in f)
             {
                 block_avail = item.block_avail;
