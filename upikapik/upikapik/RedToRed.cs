@@ -169,7 +169,7 @@ namespace upikapik
         public AsynchRedStream()
         {
         }
-        public void startStream(int id_file, ref byte[] bassBuffer, file_list fileinfo)
+        public void startStream(int id_file, file_list fileinfo)
         {
             this.fileinfo = fileinfo;
             this.id_file = id_file;
