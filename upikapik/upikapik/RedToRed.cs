@@ -333,6 +333,7 @@ namespace upikapik
             RequestProp req = (RequestProp)result;
             file.EndWrite(result);
         }
+        // public method are intented to invoked by external event
         public void writeToBuffer(ref byte[] buffer)
         {
             while (bassBufferQueue.Count != 0)
@@ -353,7 +354,8 @@ namespace upikapik
 
         public void getHostsAvail(Queue<Hosts> hosts)
         {
-            this.hosts.Clear();
+            if(hosts.Count !=0)
+                this.hosts.Clear();
             this.hosts = hosts;
         }
     }
