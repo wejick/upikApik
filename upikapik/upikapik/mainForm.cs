@@ -32,8 +32,10 @@ namespace upikapik
         // another HMR component
         RedToHub _toHub = new RedToHub("RedDb.db4o","192.168.0.33",1337); // need to be esier to change
         //RedServ _server = new RedServ("127.0.0.1", 1337);
-        AsynchRedServ _server = new AsynchRedServ("127.0.0.1", 1337);
+        AsynchRedServ _server = new AsynchRedServ("192.168.0.7", 1337);// need to be esier to change
         System.Threading.Thread tRedServ;
+        AsynchRedStream _redStream = new AsynchRedStream();
+
         public mainForm()
         {
             InitializeComponent();
@@ -131,27 +133,35 @@ namespace upikapik
             int block_size = ((144 * _current_file.bitrate * 1000) / _current_file.samplerate);
             int available_sec = (int)(available_block * 0.026);
             barProgress.Value = (_current_file.size / ((_current_file.size / block_size) * block_size)) * 100;
-            if ((available_sec) < (_timeCurrent - 2) && (!_player.isPause()))
+            if (!local)
             {
-                _player.pause_resume();
-            }
-            else if ((available_sec) < (_timeCurrent - 2) && (_player.isPause()))
-            {
-
-            }
-            else if (_player.isPause())
-            {
-                _player.pause_resume();
-            }
-
-            if (intervalCounter == 8) // update available block after 4 second
-            {
-                if (!local)
+                if ((available_sec) < (_timeCurrent - 2) && (!_player.isPause()))
                 {
-                    _toHub.command("UP;" + _current_file.id_file + ";" + _toHub.getBlockAvailableSize(_current_file.nama));
-                    _toHub.command("FD;" + _current_file.id_file);
+                    _player.pause_resume();
                 }
-                intervalCounter = 0;
+                else if ((available_sec) < (_timeCurrent - 2) && (_player.isPause()))
+                {
+
+                }
+                else if (_player.isPause())
+                {
+                    _player.pause_resume();
+                }
+
+                if (intervalCounter == 8) // update available block after 4 second
+                {
+                    if (!local)
+                    {
+                        _toHub.command("UP;" + _current_file.id_file + ";" + _toHub.getBlockAvailableSize(_current_file.nama));
+                        _toHub.command("FD;" + _current_file.id_file);
+                    }
+                    intervalCounter = 0;
+                }
+                if (intervalCounter == 4 || intervalCounter == 7) // every 2 and 1,5 second
+                {
+                    _redStream.writeToBuffer(ref buffer);
+                    _redStream.getHostsAvail(_toHub.getAvailableHost(_current_file.id_file));
+                }
             }
         }
         private void onTimerRed(object source, EventArgs e)
@@ -182,7 +192,9 @@ namespace upikapik
             }
             else
             {
-                buffer = System.IO.File.ReadAllBytes("music\\" + _current_file.nama);
+                _redStream.startStream(_current_file.id_file, _current_file);
+                buffer = new byte[_current_file.size];
+                _redStream.writeToBuffer(ref buffer);
                 _player.play_buffer(ref buffer);
             }
             barSeek.SetRange(0, _timeTotal);

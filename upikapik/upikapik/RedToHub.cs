@@ -194,7 +194,7 @@ namespace upikapik
         }
         public void storeFileAvailable(file_available file)
         {
-            int fileIdInHub = 0;            
+            int fileIdInHub = 0;
             this.command("ADD;"+file.nama+";"+file.bitrate+";"+file.samplerate+";"+file.size);
             //Thread.Sleep(500);
             //this.commandSerialize("FL");
@@ -282,6 +282,5 @@ namespace upikapik
             }
             return full;
         }
-
     }
 }
