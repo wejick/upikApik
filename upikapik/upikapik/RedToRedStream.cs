@@ -75,10 +75,7 @@ namespace upikapik
                     Thread.Sleep(50);
             }
         }
-        public void stopStream()
-        {
-            enable = false;
-        }
+
         private void startConnect(RequestProp req)
         {
             req.client = new TcpClient();
@@ -94,7 +91,7 @@ namespace upikapik
             }
             allDone.WaitOne();
         }
-        private void connectCallback(IAsyncResult result)
+        private void connectCallback(IAsyncResult result) // connect to another peer and send message to get block
         {
             allDone.Set();
             RequestProp req = (RequestProp)result.AsyncState;
@@ -122,8 +119,7 @@ namespace upikapik
             }
             printBlocks(req.receiveBuffer);
         }
-        // at this 
-        private void readCallback(IAsyncResult result)
+        private void readCallback(IAsyncResult result) // read response from another peer and write it to file
         {
             RequestProp req = (RequestProp)result.AsyncState;
             req.stream.EndRead(result);
@@ -132,6 +128,25 @@ namespace upikapik
             writeQueue.Enqueue(req);
             bassBufferQueue.Enqueue(req);
         }
+        private void writeToFile(RequestProp req) // write to file
+        {
+            try
+            {
+                file.Seek(req.startPost - 1, 0);
+                file.BeginWrite(req.receiveBuffer, 0, req.receiveBuffer.Length, writeCallback, null);
+            }
+            catch (IOException ex)
+            {
+
+            }
+        }
+        private void writeCallback(IAsyncResult result)
+        {
+            RequestProp req = (RequestProp)result;
+            file.EndWrite(result);
+        }
+
+        // tools methods
         private void printBlocks(byte[] blocks)
         {
             Console.WriteLine(System.Text.Encoding.UTF8.GetString(blocks));
@@ -175,8 +190,11 @@ namespace upikapik
         {
             int frameSize = (144 * fileinfo.bitrate * 1000) / fileinfo.samplerate;
             return (1500 / frameSize) * frameSize;
+        }            
+        private void endEverything()
+        {
+            file.Close();
         }
-
         private void enqueueFailedRequest(RequestProp req)
         {
             Hosts host = hosts.Dequeue();
@@ -184,23 +202,7 @@ namespace upikapik
             hosts.Enqueue(host);
             failedRequestQueue.Enqueue(req);
         }
-        private void writeToFile(RequestProp req)
-        {
-            try
-            {
-                file.Seek(req.startPost - 1, 0);
-                file.BeginWrite(req.receiveBuffer, 0, req.receiveBuffer.Length, writeCallback, null);
-            }
-            catch (IOException ex)
-            {
 
-            }
-        }
-        private void writeCallback(IAsyncResult result)
-        {
-            RequestProp req = (RequestProp)result;
-            file.EndWrite(result);
-        }
         // public method are intented to invoked by external event
         public void writeToBuffer(ref byte[] buffer)
         {
@@ -215,16 +217,16 @@ namespace upikapik
                 }
             }
         }
-        public void endEverything()
-        {
-            file.Close();
-        }
-
         public void getHostsAvail(Queue<Hosts> hosts)
         {
             if (hosts.Count != 0)
                 this.hosts.Clear();
             this.hosts = hosts;
+        }
+        public void stopStream()
+        {
+            enable = false;
+            endEverything();
         }
     }
 }
