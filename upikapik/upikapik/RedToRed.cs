@@ -31,7 +31,7 @@ namespace upikapik
             try
             {
                 server = new TcpListener(ipServer);
-                server.Server.ReceiveTimeout = 3000;
+                server.Server.ReceiveTimeout = 8000;
                 server.Start();
                 while (enable)
                 {
