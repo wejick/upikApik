@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Net.Sockets;
+using System.Net;
+using System.Threading;
 using System.Text;
+using System.IO;
 
 namespace upikapik
 {
@@ -49,5 +52,22 @@ namespace upikapik
             buffer = new byte[buffer_size];
             this.start_post = start_post;
         }
+    }
+    class RequestProp
+    {
+        public IPEndPoint peer;
+        public TcpClient client;
+        public NetworkStream stream;
+        public string filename;
+        // it must be adjusted, because file seeking add 1 automatically but socket reading nope
+        // Adjust by subtract it with 1 when write to file
+        public int startPost;
+        public int blockSize;
+        public byte[] receiveBuffer;
+    }
+    class Hosts
+    {
+        public IPEndPoint peer;
+        public int blockAvail;
     }
 }
