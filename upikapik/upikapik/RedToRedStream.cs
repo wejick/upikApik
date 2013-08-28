@@ -23,6 +23,7 @@ namespace upikapik
         private ManualResetEvent allDone = new ManualResetEvent(false);
         private object createReqLocker = new object();
         private object writeByteLocker = new object();
+        private object writeFileLocker = new object();
         private bool enable = false;
 
         Timer startTimer;
@@ -71,8 +72,8 @@ namespace upikapik
                     else
                         startConnect(createReq(filename, blocksize, filesize));
                 }
-                else
-                    Thread.Sleep(50);
+                //else
+                    //Thread.Sleep(50);
             }
         }
 
@@ -108,7 +109,7 @@ namespace upikapik
             {
                 enqueueFailedRequest(req);
             }
-            Thread.Sleep(100);
+            //Thread.Sleep(100);
             try
             {
                 req.stream.BeginRead(req.receiveBuffer, 0, req.blockSize, readCallback, req);
@@ -132,8 +133,11 @@ namespace upikapik
         {
             try
             {
-                file.Seek(req.startPost - 1, 0);
-                file.BeginWrite(req.receiveBuffer, 0, req.receiveBuffer.Length, writeCallback, null);
+                lock (writeFileLocker)
+                {
+                    file.Seek(req.startPost - 1, 0);
+                    file.BeginWrite(req.receiveBuffer, 0, req.receiveBuffer.Length, writeCallback, null);
+                }
             }
             catch (IOException ex)
             {
@@ -157,7 +161,7 @@ namespace upikapik
             req.blockSize = blocksize;
             req.filename = filename;
             req.startPost = startpost;
-            req.peer.Port = 1337; // hard coded port
+            req.peer = new IPEndPoint(IPAddress.Any, 1337);
 
             lock (createReqLocker)
             {
