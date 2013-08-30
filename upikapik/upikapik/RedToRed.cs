@@ -20,7 +20,7 @@ namespace upikapik
 
         public AsynchRedServ()
         {
-            ipServer = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 1337);
+            ipServer = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 1338);
         }
         public AsynchRedServ(string ipAddress, int port)
         {
