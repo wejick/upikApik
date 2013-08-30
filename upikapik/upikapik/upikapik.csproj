@@ -69,6 +69,7 @@
     <Compile Include="RedToRed.cs" />
     <Compile Include="RedToHub.cs" />
     <Compile Include="RedFromRed.cs" />
+    <Compile Include="RedToRedStream.cs" />
     <EmbeddedResource Include="mainForm.resx">
       <DependentUpon>mainForm.cs</DependentUpon>
     </EmbeddedResource>
