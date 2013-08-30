@@ -152,7 +152,7 @@ namespace upikapik
         {
             string fileDetail = response;
             List<file_host_rel> update = JsonConvert.DeserializeObject<List<file_host_rel>>(response);
-            dynamic all_ok = from file_host_rel f in db where f.id_file.Equals(id) select f;
+            dynamic all_ok = from file_host_rel f in db select f;
             // delete all apropriate
             foreach (var item in all_ok)
             {
