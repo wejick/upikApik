@@ -50,7 +50,9 @@ namespace upikapik
             file = new FileStream("music/" + filename, FileMode.OpenOrCreate, FileAccess.Write);
 
             enable = true;
-            startTimer = new Timer(x => { startTimerCallback(filename, blocksize, filesize); }, null, 0, 100); // is it better than forever while?
+            startTimer = new Timer(x => { startTimerCallback(filename, blocksize, filesize); }, null, 0, 500); // is it better than forever while?
+            //startTimerCallback(filename, blocksize, filesize);
+
         }
         public void startTimerCallback(string filename, int blocksize, int filesize)
         {
@@ -136,7 +138,7 @@ namespace upikapik
                 lock (writeFileLocker)
                 {
                     file.Seek(req.startPost - 1, 0);
-                    file.BeginWrite(req.receiveBuffer, 0, req.receiveBuffer.Length, writeCallback, null);
+                    file.BeginWrite(req.receiveBuffer, 0, req.receiveBuffer.Length, writeCallback, req);
                 }
             }
             catch (IOException ex)
@@ -146,7 +148,7 @@ namespace upikapik
         }
         private void writeCallback(IAsyncResult result)
         {
-            RequestProp req = (RequestProp)result;
+            //RequestProp req = (RequestProp)result;
             file.EndWrite(result);
         }
 
@@ -175,6 +177,7 @@ namespace upikapik
                 while (true)
                 {
                     Hosts peer = hosts.Dequeue();
+                    req.peer = peer.peer;
                     hosts.Enqueue(peer);
                     if (peer.blockAvail >= startpost + blocksize)
                         break;
@@ -210,11 +213,12 @@ namespace upikapik
         // public method are intented to invoked by external event
         public void writeToBuffer(ref byte[] buffer)
         {
+            RequestProp req;
             while (bassBufferQueue.Count != 0)
             {
-                RequestProp req = bassBufferQueue.Dequeue();
+                req = bassBufferQueue.Dequeue();
                 int y = 0;
-                for (int i = req.startPost; i < req.receiveBuffer.Length; i++)
+                for (int i = req.startPost; i < req.receiveBuffer.Length + req.startPost; i++)
                 {
                     buffer[i] = req.receiveBuffer[y];
                     y++;
@@ -223,8 +227,8 @@ namespace upikapik
         }
         public void getHostsAvail(Queue<Hosts> hosts)
         {
-            if (hosts.Count != 0)
-                this.hosts.Clear();
+            //if (this.hosts.Count != 0)
+            //    this.hosts.Clear();
             this.hosts = hosts;
         }
         public void stopStream()
