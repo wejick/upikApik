@@ -161,7 +161,7 @@ namespace upikapik
             req.blockSize = blocksize;
             req.filename = filename;
             req.startPost = startpost;
-            req.peer = new IPEndPoint(IPAddress.Any, 1337);
+            req.peer = new IPEndPoint(IPAddress.Any, 1338);
 
             lock (createReqLocker)
             {
