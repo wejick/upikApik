@@ -10,7 +10,7 @@ namespace upikapik
 {
     class file_host_rel
     {
-        public int id_file { get; set; }
+        public string nama { get; set; }
         public string ip { get; set; }
         public int block_avail { get; set; }
     }

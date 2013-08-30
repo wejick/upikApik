@@ -222,7 +222,7 @@ namespace upikapik
             }
             return id_file;
         }
-        public Queue<Hosts> getAvailableHost(int id_file)
+        public Queue<Hosts> getAvailableHost(string nama)
         {
             Hosts host = new Hosts();
             Queue<Hosts> hosts = new Queue<Hosts>();
@@ -231,7 +231,7 @@ namespace upikapik
             IPHostEntry ipEntry = Dns.GetHostEntry(strHostName);
             IPAddress[] addr = ipEntry.AddressList;
 
-            dynamic obj = from file_host_rel f in db where f.id_file.Equals(id_file) select f;
+            dynamic obj = from file_host_rel f in db where f.nama.Equals(nama) select f;
             foreach(var item in obj)
             {
                 foreach (IPAddress address in addr)

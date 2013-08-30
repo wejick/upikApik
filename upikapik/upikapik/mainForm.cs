@@ -12,6 +12,7 @@ namespace upikapik
         private const int MAX_FILE_AVAIL = 10;
         BassPlayer _player;
         private OpenFileDialog _opnFile;
+        string _appDir;
 
         // bass player things
         string[] _paths;
@@ -57,8 +58,10 @@ namespace upikapik
             
             tRedServ = new System.Threading.Thread(() => { _server.startListening(); });
             tRedServ.Start();
+
+            _appDir = Directory.GetCurrentDirectory();
         }
-                
+
         private void btnPlay_Click(object sender, EventArgs e)
         {
             _player.pause_resume();
@@ -75,7 +78,7 @@ namespace upikapik
                     string filename = _opnFile.SafeFileName;
                     try
                     {
-                        System.IO.File.Copy(path, Path.Combine(Directory.GetCurrentDirectory(),"music",filename));
+                        System.IO.File.Copy(path, Path.Combine(_appDir, "music", filename));
                     }
                     catch (Exception ex)
                     {
@@ -152,15 +155,15 @@ namespace upikapik
                 {
                     if (!local)
                     {
-                        _toHub.command("UP;" + _current_file.id_file + ";" + _toHub.getBlockAvailableSize(_current_file.nama));
-                        _toHub.command("FD;" + _current_file.id_file);
+                        //_toHub.command("UP;" + _current_file.id_file + ";" + _toHub.getBlockAvailableSize(_current_file.nama));
+                        //_toHub.command("FD;" + _current_file.id_file);
                     }
                     intervalCounter = 0;
                 }
                 if (intervalCounter == 4 || intervalCounter == 7) // every 2 and 1,5 second
                 {
                     _redStream.writeToBuffer(ref buffer);
-                    _redStream.getHostsAvail(_toHub.getAvailableHost(_current_file.id_file));
+                    _redStream.getHostsAvail(_toHub.getAvailableHost(_current_file.nama));
                 }
             }
         }
@@ -195,8 +198,8 @@ namespace upikapik
                 //get host info before playing
                 _toHub.command("FD;" + _current_file.id_file);
                 System.Threading.Thread.Sleep(200);
-                _redStream.getHostsAvail(_toHub.getAvailableHost(_current_file.id_file));
-
+                _redStream.getHostsAvail(_toHub.getAvailableHost(_current_file.nama));
+                
                 _redStream.startStream(_current_file.id_file, _current_file);
                 buffer = new byte[_current_file.size];
                 _redStream.writeToBuffer(ref buffer);
