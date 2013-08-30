@@ -224,7 +224,7 @@ namespace upikapik
         }
         public Queue<Hosts> getAvailableHost(string nama)
         {
-            Hosts host = new Hosts();
+            Hosts host = new Hosts();            
             Queue<Hosts> hosts = new Queue<Hosts>();
 
             String strHostName = Dns.GetHostName();
@@ -243,8 +243,7 @@ namespace upikapik
                     else
                     {
                         host.blockAvail = item.block_avail;
-                        host.peer.Address = IPAddress.Parse(item.ip);
-                        host.peer.Port = 1337;
+                        host.peer = new IPEndPoint(IPAddress.Parse(item.ip), 1338);
 
                         hosts.Enqueue(host);
                     }
