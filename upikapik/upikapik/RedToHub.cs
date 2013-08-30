@@ -289,7 +289,7 @@ namespace upikapik
         {
             bool full = false;
 
-            dynamic f = from file_available g in db select g;
+            dynamic f = from file_available g in db where g.nama.Equals(nama) select g;
             foreach (var item in f)
             {
                 full = item.full;
