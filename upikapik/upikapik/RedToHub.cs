@@ -163,8 +163,6 @@ namespace upikapik
             {
                 db.Store(item);
             }
-            all_ok = from file_host_rel f in db where f.id_file.Equals(id) select f;
-
         }
 
         // Add entry to file_available db
@@ -252,7 +250,7 @@ namespace upikapik
                     }
                 }
             }
-            return new Queue<Hosts>();
+            return hosts;
         }
         public void updateFileInfo(int id_file, int blockAvailable)
         {

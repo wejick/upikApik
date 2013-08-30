@@ -118,7 +118,7 @@ namespace upikapik
             {
                 enqueueFailedRequest(req);
             }
-            printBlocks(req.receiveBuffer);
+            //printBlocks(req.receiveBuffer);
         }
         private void readCallback(IAsyncResult result) // read response from another peer and write it to file
         {
