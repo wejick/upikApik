@@ -88,23 +88,28 @@ namespace upikapik
                 {
                     buffer = System.Text.Encoding.UTF8.GetBytes(parsedCommand[0]);
                 }
-                if (parsedCommand[0] == "FD")
+                else if (parsedCommand[0] == "FD")
                 {
                     buffer = System.Text.Encoding.UTF8.GetBytes(parsedCommand[0] + ";;" + parsedCommand[1]);
                 }
-                if (parsedCommand[0] == "UP")
+                else if (parsedCommand[0] == "UP")
                 {
                     // command;;id_file;;block_avail
                     buffer = System.Text.Encoding.UTF8.GetBytes(parsedCommand[0] + ";;" + parsedCommand[1] + ";;" + parsedCommand[2]);
                 }
-                if (parsedCommand[0] == "NA")
+                else if (parsedCommand[0] == "NA")
                 {
                     buffer = System.Text.Encoding.UTF8.GetBytes(parsedCommand[0]);
                 }
-                if (parsedCommand[0] == "ADD")
+                else if (parsedCommand[0] == "ADD")
                 {
                     // command;;file_name;;bitrate;;samplerate;;size
                     buffer = System.Text.Encoding.UTF8.GetBytes(parsedCommand[0] + ";;" + parsedCommand[1] + ";;" + parsedCommand[2] + ";;" + parsedCommand[3] + ";;" + parsedCommand[4]);
+                }
+                else if (parsedCommand[0] == "UN")
+                {
+                    // command;;file_name;;block_avail
+                    buffer = System.Text.Encoding.UTF8.GetBytes(parsedCommand[0] + ";;" + parsedCommand[1] + ";;" + parsedCommand[2]);
                 }
                 stream.Write(buffer, 0, buffer.Length);
                 // clear buffer
@@ -194,9 +199,9 @@ namespace upikapik
         }
         public void storeFileAvailable(file_available file)
         {
-            int fileIdInHub = 0;
+            int fileIdInHub = getIdFromName(file.nama);
             this.command("ADD;"+file.nama+";"+file.bitrate+";"+file.samplerate+";"+file.size);
-            //Thread.Sleep(500);
+            Thread.Sleep(500);
             //this.commandSerialize("FL");
             dynamic t = from file_list sip in db select sip;
             //dynamic f = from file_list sip in db where sip.nama.Equals(file.nama) select sip;
@@ -206,7 +211,18 @@ namespace upikapik
                     fileIdInHub = item.id_file;
             }
             db.Store(file);
-            this.command("UP;" + fileIdInHub + ";" + file.block_avail);
+            this.command("UN;" + file.nama + ";" + file.block_avail);
+        }
+        // we can't do this because we not yet get the list before add it.
+        public int getIdFromName(string name)
+        {
+            int id_file=0;
+            dynamic f = from file_list g in db where g.nama.Equals(name) select g;
+            foreach (var item in f)
+            {
+                id_file = item.id_file;
+            }
+            return id_file;
         }
         public Queue<Hosts> getAvailableHost(int id_file)
         {
