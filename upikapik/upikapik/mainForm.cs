@@ -120,7 +120,7 @@ namespace upikapik
                 barSeek.Value = _timeCurrent;
             
             // play next song
-            if ((listPlay.Items.Count-1 > _indexOfPlayedFile) && !(_player.isActive()) && !_shuffle)
+            /*if ((listPlay.Items.Count-1 > _indexOfPlayedFile) && !(_player.isActive()) && !_shuffle)
             {
                 _indexOfPlayedFile++;
                 play();
@@ -129,7 +129,7 @@ namespace upikapik
             {
                 _indexOfPlayedFile = _rand.Next(0, listPlay.Items.Count);
                 play();
-            }
+            }*/
 
             // pause when buffering
             int available_block = _toHub.getBlockAvailableSize(_current_file.nama);
