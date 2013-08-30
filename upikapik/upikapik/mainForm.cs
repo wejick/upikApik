@@ -32,7 +32,7 @@ namespace upikapik
         // another HMR component
         RedToHub _toHub = new RedToHub("RedDb.db4o","192.168.0.33",1337); // need to be esier to change
         //RedServ _server = new RedServ("127.0.0.1", 1337);
-        AsynchRedServ _server = new AsynchRedServ("192.168.0.7", 1337);// need to be esier to change
+        AsynchRedServ _server = new AsynchRedServ("192.168.0.7", 1338);// need to be esier to change
         System.Threading.Thread tRedServ;
         AsynchRedStream _redStream = new AsynchRedStream();
 
@@ -192,6 +192,11 @@ namespace upikapik
             }
             else
             {
+                //get host info before playing
+                _toHub.command("FD;" + _current_file.id_file);
+                System.Threading.Thread.Sleep(200);
+                _redStream.getHostsAvail(_toHub.getAvailableHost(_current_file.id_file));
+
                 _redStream.startStream(_current_file.id_file, _current_file);
                 buffer = new byte[_current_file.size];
                 _redStream.writeToBuffer(ref buffer);
