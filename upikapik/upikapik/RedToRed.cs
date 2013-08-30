@@ -10,8 +10,7 @@ namespace upikapik
     class AsynchRedServ : IDisposable
     {
         private string FILE_DIR = "music/";
-        private const int MAX_THREAD = 5;
-        private const int MSG_LENGTH_BYTE = 40; //masih ngasal, panjang dari request message
+        private const int MSG_LENGTH_BYTE = 100; //masih ngasal, panjang dari request message
         private int threadCount = 0;
         private TcpListener server;
         public bool enable = true;
