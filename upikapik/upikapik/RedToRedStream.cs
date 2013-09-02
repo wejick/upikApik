@@ -14,7 +14,7 @@ namespace upikapik
     {
         file_list fileinfo;
 
-        private const int MAX_REQUEST = 4;
+        private const int MAX_REQUEST = 20;
         private int startpost;
         int id_file;
 
@@ -26,7 +26,7 @@ namespace upikapik
         private object writeFileLocker = new object();
         private bool enable = false;
 
-        Timer startTimer;
+        private Timer startTimer;
         private Queue<RequestProp> writeQueue = new Queue<RequestProp>(MAX_REQUEST);
         private Queue<RequestProp> bassBufferQueue = new Queue<RequestProp>();
         private Queue<RequestProp> failedRequestQueue = new Queue<RequestProp>();
@@ -51,17 +51,18 @@ namespace upikapik
 
             enable = true;
             startTimer = new Timer(x => { startTimerCallback(filename, blocksize, filesize); }, null, 0, 500); // is it better than forever while?
-
         }
-        public void startTimerCallback(string filename, int blocksize, int filesize)
+        private void startTimerCallback(string filename, int blocksize, int filesize)
         {
+            // keep timer always alive
+            startTimer.Change(0, 500);
             if (enable)
             {
                 if (writeQueue.Count != 0)
                 {
                     writeToFile(writeQueue.Dequeue());
                 }
-                if (writeQueue.Count != 4)
+                if (!(isWriteQueueFull()))
                 {
                     if ((startpost + blocksize) >= filesize)
                     {
@@ -73,8 +74,6 @@ namespace upikapik
                     else
                         startConnect(createReq(filename, blocksize, filesize));
                 }
-                //else
-                    //Thread.Sleep(50);
             }
         }
 
@@ -110,7 +109,7 @@ namespace upikapik
             {
                 enqueueFailedRequest(req);
             }
-            //Thread.Sleep(100);
+
             try
             {
                 req.stream.BeginRead(req.receiveBuffer, 0, req.blockSize, readCallback, req);
@@ -119,7 +118,7 @@ namespace upikapik
             {
                 enqueueFailedRequest(req);
             }
-            //printBlocks(req.receiveBuffer);
+
         }
         private void readCallback(IAsyncResult result) // read response from another peer and write it to file
         {
@@ -136,7 +135,10 @@ namespace upikapik
             {
                 lock (writeFileLocker)
                 {
-                    file.Seek(req.startPost - 1, 0);
+                    if(req.startPost == 0)
+                        file.Seek(req.startPost, 0);
+                    else
+                        file.Seek(req.startPost - 1, 0);
                     file.BeginWrite(req.receiveBuffer, 0, req.receiveBuffer.Length, writeCallback, req);
                 }
             }
@@ -167,8 +169,10 @@ namespace upikapik
             lock (createReqLocker)
             {
                 if ((startpost + blocksize) > filesize)
+                    //req.blockSize = filesize - startpost + 1;
                     blocksize = filesize - startpost + 1;
                 else
+                    //startpost = startpost + req.blockSize + 1;
                     startpost = startpost + blocksize + 1;
 
                 // get the address then enqueue it again
@@ -178,7 +182,8 @@ namespace upikapik
                     Hosts peer = hosts.Dequeue();
                     req.peer = peer.peer;
                     hosts.Enqueue(peer);
-                    if (peer.blockAvail >= startpost + blocksize)
+                    if ((peer.blockAvail * blocksize) >= startpost + req.blockSize)
+                    //if ((peer.blockAvail * blocksize) >= startpost + blocksize)
                         break;
                 }
             }
@@ -236,5 +241,12 @@ namespace upikapik
             enable = false;
             endEverything();
         }
+        public bool isWriteQueueFull()
+        {
+            if (writeQueue.Count == MAX_REQUEST)
+                return true;
+            return false;
+        }
+
     }
 }
