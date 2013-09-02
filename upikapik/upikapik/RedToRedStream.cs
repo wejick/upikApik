@@ -25,6 +25,8 @@ namespace upikapik
         private object writeByteLocker = new object();
         private object writeFileLocker = new object();
         private bool enable = false;
+        private bool enStream = false;
+        private bool enWrite = false;
 
         private Timer startTimer;
         private Queue<RequestProp> writeQueue = new Queue<RequestProp>(MAX_REQUEST);
@@ -50,6 +52,8 @@ namespace upikapik
             file = new FileStream("music/" + filename, FileMode.OpenOrCreate, FileAccess.Write);
 
             enable = true;
+            enStream = true;
+            enWrite = true;
             startTimer = new Timer(x => { startTimerCallback(filename, blocksize, filesize); }, null, 0, 500); // is it better than forever while?
         }
         private void startTimerCallback(string filename, int blocksize, int filesize)
@@ -58,21 +62,28 @@ namespace upikapik
             startTimer.Change(0, 500);
             if (enable)
             {
+                if(enStream)
+                {
+                    if (!(isWriteQueueFull()))
+                    {
+                        if ((startpost + blocksize) >= filesize)
+                        {                            
+                            enStream = false;
+                        }
+                        else if (failedRequestQueue.Count != 0)
+                            startConnect(failedRequestQueue.Dequeue());
+                        else
+                            startConnect(createReq(filename, blocksize, filesize));
+                    }
+                }
                 if (writeQueue.Count != 0)
                 {
                     writeToFile(writeQueue.Dequeue());
                 }
-                if (!(isWriteQueueFull()))
+                else if (writeQueue.Count == 0 && enStream == false)
                 {
-                    if ((startpost + blocksize) >= filesize)
-                    {
-                        stopStream();
-                        startTimer.Dispose();
-                    }
-                    else if (failedRequestQueue.Count != 0)
-                        startConnect(failedRequestQueue.Dequeue());
-                    else
-                        startConnect(createReq(filename, blocksize, filesize));
+                    stopStream();
+                    startTimer.Dispose();
                 }
             }
         }
@@ -127,10 +138,12 @@ namespace upikapik
             byte[] receiveBuffer = new byte[req.blockSize];
             receiveBuffer = req.receiveBuffer;
             writeQueue.Enqueue(req);
-            bassBufferQueue.Enqueue(req);
+            //bassBufferQueue.Enqueue(req);
         }
         private void writeToFile(RequestProp req) // write to file
         {
+            if (req == null)
+                return;
             try
             {
                 lock (writeFileLocker)
@@ -138,7 +151,7 @@ namespace upikapik
                     if(req.startPost == 0)
                         file.Seek(req.startPost, 0);
                     else
-                        file.Seek(req.startPost - 1, 0);
+                        file.Seek(req.startPost -1, 0);
                     file.BeginWrite(req.receiveBuffer, 0, req.receiveBuffer.Length, writeCallback, req);
                 }
             }
@@ -151,6 +164,10 @@ namespace upikapik
         {
             //RequestProp req = (RequestProp)result;
             file.EndWrite(result);
+            if (writeQueue.Count == 0 && enStream == false)
+            {
+                    //endEverything();
+            }
         }
 
         // tools methods
@@ -202,7 +219,7 @@ namespace upikapik
             int frameSize = (144 * fileinfo.bitrate * 1000) / fileinfo.samplerate;
             return (1500 / frameSize) * frameSize;
         }            
-        private void endEverything()
+        public void endEverything()
         {
             if(file != null)
                 file.Close();
@@ -239,7 +256,6 @@ namespace upikapik
         public void stopStream()
         {
             enable = false;
-            endEverything();
         }
         public bool isWriteQueueFull()
         {
