@@ -240,6 +240,8 @@ namespace upikapik
                     {
                         break;
                     }
+                    if (address.Equals(null))
+                        break;
                     else
                     {
                         host.blockAvail = item.block_avail;
