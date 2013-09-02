@@ -14,7 +14,7 @@ namespace upikapik
     {
         file_list fileinfo;
 
-        private const int MAX_REQUEST = 20;
+        private const int MAX_REQUEST = 10;
         private int startpost;
         int id_file;
 
@@ -32,6 +32,7 @@ namespace upikapik
         private Queue<RequestProp> writeQueue = new Queue<RequestProp>(MAX_REQUEST);
         private Queue<RequestProp> bassBufferQueue = new Queue<RequestProp>();
         private Queue<RequestProp> failedRequestQueue = new Queue<RequestProp>();
+        private Queue<int> starpostQueue = new Queue<int>();
         private Queue<Hosts> hosts;
 
         FileStream file = null;
@@ -54,6 +55,7 @@ namespace upikapik
             enable = true;
             enStream = true;
             enWrite = true;
+            createStartPostQueue(blocksize, filesize);
             startTimer = new Timer(x => { startTimerCallback(filename, blocksize, filesize); }, null, 0, 500); // is it better than forever while?
         }
         private void startTimerCallback(string filename, int blocksize, int filesize)
@@ -65,25 +67,25 @@ namespace upikapik
                 if(enStream)
                 {
                     if (!(isWriteQueueFull()))
-                    {
-                        if ((startpost + blocksize) >= filesize)
-                        {                            
-                            enStream = false;
-                        }
-                        else if (failedRequestQueue.Count != 0)
+                    {                       
+                        if (failedRequestQueue.Count != 0)
                             startConnect(failedRequestQueue.Dequeue());
-                        else
+                        else if(starpostQueue.Count != 0)
                             startConnect(createReq(filename, blocksize, filesize));
                     }
                 }
-                if (writeQueue.Count != 0)
+                lock (writeQueueLocker)
                 {
-                    writeToFile(writeQueue.Dequeue());
-                }
-                else if (writeQueue.Count == 0 && enStream == false)
-                {
-                    stopStream();
-                    startTimer.Dispose();
+                    if (writeQueue.Count != 0)
+                    {
+                        writeToFile(writeQueue.Dequeue());
+                    }
+
+                    else if (writeQueue.Count == 0 && enStream == false)
+                    {
+                        stopStream();
+                        startTimer.Dispose();
+                    }
                 }
             }
         }
@@ -151,10 +153,10 @@ namespace upikapik
             {
                 lock (writeFileLocker)
                 {
-                    if(req.startPost == 0)
-                        file.Seek(req.startPost, 0);
+                    if (req.startPost == 0)
+                        file.Seek(req.startPost, SeekOrigin.Begin);
                     else
-                        file.Seek(req.startPost -1, 0);
+                        file.Seek(req.startPost, SeekOrigin.Begin);
                     file.BeginWrite(req.receiveBuffer, 0, req.receiveBuffer.Length, writeCallback, req);
                 }
             }
@@ -178,26 +180,34 @@ namespace upikapik
         {
             Console.WriteLine(System.Text.Encoding.UTF8.GetString(blocks));
         }
-        private void createStarPostQueue(int blocksize, int filesize)
+        private void createStartPostQueue(int blocksize, int filesize)
         {
+            int startpost = 0;
+            starpostQueue.Enqueue(startpost);
+            while (true)
+            {
+                if ((startpost + blocksize) > filesize)
+                    blocksize = filesize - startpost + 1;
+                else
+                    startpost = startpost + blocksize + 1;
+                starpostQueue.Enqueue(startpost);
+                if (startpost+blocksize >= filesize)
+                    break;
+            }
         }
         private RequestProp createReq(string filename, int blocksize, int filesize)
         {
             RequestProp req = new RequestProp();
             req.blockSize = blocksize;
             req.filename = filename;
-            req.startPost = startpost;
+            req.startPost = starpostQueue.Dequeue();
             req.peer = new IPEndPoint(IPAddress.Any, 1338);
-
+            
+            if ((startpost + blocksize) > filesize)
+                req.blockSize = filesize - req.startPost + 1;
+            
             lock (createReqLocker)
             {
-                if ((startpost + blocksize) > filesize)
-                    //req.blockSize = filesize - startpost + 1;
-                    blocksize = filesize - startpost + 1;
-                else
-                    //startpost = startpost + req.blockSize + 1;
-                    startpost = startpost + blocksize + 1;
-
                 // get the address then enqueue it again
                 // if block available from host smaller than requested, get another host
                 while (true)
@@ -206,7 +216,6 @@ namespace upikapik
                     req.peer = peer.peer;
                     hosts.Enqueue(peer);
                     if ((peer.blockAvail * blocksize) >= startpost + req.blockSize)
-                    //if ((peer.blockAvail * blocksize) >= startpost + blocksize)
                         break;
                 }
             }
@@ -247,8 +256,10 @@ namespace upikapik
             {
                 req = bassBufferQueue.Dequeue();
                 int y = 0;
-                for (int i = req.startPost; i < req.receiveBuffer.Length + req.startPost; i++)
+                for (int i = req.startPost; i < req.blockSize - 1 + req.startPost; i++)
                 {
+                    if (i == buffer.Length)
+                        break;
                     buffer[i] = req.receiveBuffer[y];
                     y++;
                 }
