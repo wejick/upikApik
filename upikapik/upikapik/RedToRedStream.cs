@@ -22,7 +22,7 @@ namespace upikapik
 
         private ManualResetEvent allDone = new ManualResetEvent(false);
         private object createReqLocker = new object();
-        private object writeByteLocker = new object();
+        private object writeQueueLocker = new object();
         private object writeFileLocker = new object();
         private bool enable = false;
         private bool enStream = false;
@@ -137,8 +137,11 @@ namespace upikapik
             req.stream.EndRead(result);
             byte[] receiveBuffer = new byte[req.blockSize];
             receiveBuffer = req.receiveBuffer;
-            writeQueue.Enqueue(req);
-            //bassBufferQueue.Enqueue(req);
+            lock (writeQueueLocker)
+            {
+                writeQueue.Enqueue(req);
+                bassBufferQueue.Enqueue(req);
+            }
         }
         private void writeToFile(RequestProp req) // write to file
         {
@@ -174,6 +177,9 @@ namespace upikapik
         private void printBlocks(byte[] blocks)
         {
             Console.WriteLine(System.Text.Encoding.UTF8.GetString(blocks));
+        }
+        private void createStarPostQueue(int blocksize, int filesize)
+        {
         }
         private RequestProp createReq(string filename, int blocksize, int filesize)
         {
@@ -217,7 +223,8 @@ namespace upikapik
         private int getBlockSize()
         {
             int frameSize = (144 * fileinfo.bitrate * 1000) / fileinfo.samplerate;
-            return (1500 / frameSize) * frameSize;
+            //return (1500 / frameSize) * frameSize;
+            return (6000 / frameSize) * frameSize;
         }            
         public void endEverything()
         {
