@@ -51,7 +51,6 @@ namespace upikapik
 
             enable = true;
             startTimer = new Timer(x => { startTimerCallback(filename, blocksize, filesize); }, null, 0, 500); // is it better than forever while?
-            //startTimerCallback(filename, blocksize, filesize);
 
         }
         public void startTimerCallback(string filename, int blocksize, int filesize)
@@ -200,7 +199,8 @@ namespace upikapik
         }            
         private void endEverything()
         {
-            file.Close();
+            if(file != null)
+                file.Close();
         }
         private void enqueueFailedRequest(RequestProp req)
         {
