@@ -80,7 +80,7 @@ namespace upikapik
                 parsedCommand = command.Split(';');
 
                 filename = parsedCommand[1];
-                startPost = Convert.ToInt16(parsedCommand[2]);
+                startPost = Convert.ToInt32(parsedCommand[2]);
                 size = Convert.ToInt16(parsedCommand[3]);
                 buffSend = new byte[size];
 
