@@ -137,6 +137,7 @@ namespace upikapik
             }*/
 
             // pause when buffering
+            // belum bisa karena _redToHub.updateFileInfo belum dijalankan
             int available_block = _toHub.getBlockAvailableSize(_current_file.nama);
             int block_size = ((144 * _current_file.bitrate * 1000) / _current_file.samplerate);
             int available_sec = (int)(available_block * 0.026);
@@ -159,6 +160,7 @@ namespace upikapik
                     buffer = _redStream.getBuffer();
                     _redStream.byteToBuffer(buff, buffer);
                     _player.play_buffer(buff, _current_file.size);
+                    
                     //_player.play_buffer(ref buffer);
                 }
                 if (intervalBuffer == 5)
