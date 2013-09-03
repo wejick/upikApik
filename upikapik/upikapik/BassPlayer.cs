@@ -178,6 +178,26 @@ namespace upikapik
             }
         }
         /*
+         * < Play the stream from buffer>
+         * @param intptr of buffer of played file
+         * */
+        public void play_buffer(IntPtr buffer, int length)
+        {
+            local = false;
+            if (Bass.BASS_ChannelIsActive(stream) == BASSActive.BASS_ACTIVE_PLAYING ||
+                Bass.BASS_ChannelIsActive(stream) == BASSActive.BASS_ACTIVE_PLAYING)
+            {
+                Bass.BASS_StreamFree(stream);
+                Bass.BASS_StreamFree(channel);
+            }
+            if ((stream = Bass.BASS_SampleLoad(buffer,0,length,1,BASSFlag.BASS_DEFAULT)) != 0)
+            {
+                channel = Bass.BASS_SampleGetChannel(stream, false);
+                Bass.BASS_ChannelPlay(channel, false);
+                streamLen = Bass.BASS_ChannelGetLength(channel);
+            }
+        }
+        /*
          * < Pause or resume the stream according to current state of stream >
          * 
          * */
