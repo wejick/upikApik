@@ -4,6 +4,7 @@ using System.Windows.Forms;
 using System.Net.Sockets;
 using System.IO;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 //using System.Threading;
 namespace upikapik
 {
@@ -13,7 +14,7 @@ namespace upikapik
         BassPlayer _player;
         private OpenFileDialog _opnFile;
         string _appDir;
-
+        
         // bass player things
         string[] _paths;
         file_list _current_file;
@@ -25,11 +26,14 @@ namespace upikapik
         Random _rand = new Random();
         bool local = false;
         byte[] buffer = null;
+        byte[] backBuffer = null;
+        IntPtr buff = IntPtr.Zero;
         // timer
         Timer _timerPlayer;
         Timer _timerRed; // May can be if implemented in redToHub
         int intervalCounter = 0;
-
+        int intervalPlay = 0;
+        int intervalBuffer = 0;
         // another HMR component
         RedToHub _toHub = new RedToHub("RedDb.db4o","192.168.0.33",1337); // need to be esier to change
         //RedServ _server = new RedServ("127.0.0.1", 1337);
@@ -48,7 +52,7 @@ namespace upikapik
             _opnFile.Filter = "mp3 (*.mp3)|*.mp3";
             _opnFile.Multiselect = false;
 
-            _timerPlayer.Interval = 500;
+            _timerPlayer.Interval = 100;
             _timerPlayer.Tick += new EventHandler(onTimerPlayer);
             _timerRed.Interval = 540000; // 9 minutes
             _timerRed.Tick += new EventHandler(onTimerRed);
@@ -113,11 +117,12 @@ namespace upikapik
         private void onTimerPlayer(object source, EventArgs e)
         {
             intervalCounter++;
-
+            intervalPlay++;
+            intervalBuffer++;
             _timeCurrent = _player.getPosSec();
             lblStatus.Text = "Time : " + s2t(_timeTotal) + " / " + s2t(_player.getPosSec());
-            if(_timeCurrent != -1)
-                barSeek.Value = _timeCurrent;
+            //if(_timeCurrent != -1)
+            //    barSeek.Value = _timeCurrent;
             
             // play next song
             /*if ((listPlay.Items.Count-1 > _indexOfPlayedFile) && !(_player.isActive()) && !_shuffle)
@@ -135,23 +140,10 @@ namespace upikapik
             int available_block = _toHub.getBlockAvailableSize(_current_file.nama);
             int block_size = ((144 * _current_file.bitrate * 1000) / _current_file.samplerate);
             int available_sec = (int)(available_block * 0.026);
-            barProgress.Value = (_current_file.size / ((_current_file.size / block_size) * block_size)) * 100;
+            //barProgress.Value = (_current_file.size / ((_current_file.size / block_size) * block_size)) * 100;
             if (!local)
             {
-                if ((available_sec) < (_timeCurrent - 2) && (!_player.isPause()))
-                {
-                    _player.pause_resume();
-                }
-                else if ((available_sec) < (_timeCurrent - 2) && (_player.isPause()))
-                {
-
-                }
-                else if (_player.isPause())
-                {
-                    _player.pause_resume();
-                }
-
-                if (intervalCounter == 8) // update available block after 4 second
+                if (intervalCounter == 40) // update available block after 4 second
                 {
                     if (!local)
                     {
@@ -160,11 +152,29 @@ namespace upikapik
                     }
                     intervalCounter = 0;
                 }
-                if (intervalCounter == 4 || intervalCounter == 7) // every 2 and 1,5 second
+                //_redStream.writeToBuffer(ref backBuffer);
+                if (intervalPlay == 20)
+                {
+                    //buffer = backBuffer;
+                    buffer = _redStream.getBuffer();
+                    _redStream.byteToBuffer(buff, buffer);
+                    _player.play_buffer(buff, _current_file.size);
+                    //_player.play_buffer(ref buffer);
+                }
+                if (intervalBuffer == 5)
+                {
+                    buffer = _redStream.getBuffer();
+                    _redStream.byteToBuffer(buff, buffer);
+                    intervalBuffer = 0;
+                }
+
+                /*
+                if (!(_redStream.isWriteQueueFull()))
                 {
                     _redStream.writeToBuffer(ref buffer);
-                    _redStream.getHostsAvail(_toHub.getAvailableHost(_current_file.nama));
+                    //_redStream.getHostsAvail(_toHub.getAvailableHost(_current_file.nama));
                 }
+                 */
             }
         }
         private void onTimerRed(object source, EventArgs e)
@@ -196,14 +206,18 @@ namespace upikapik
             else
             {
                 //get host info before playing
+                _redStream.stopStream();
+                _redStream.endEverything();
                 _toHub.command("FD;" + _current_file.id_file);
                 System.Threading.Thread.Sleep(200);
                 _redStream.getHostsAvail(_toHub.getAvailableHost(_current_file.nama));
                 
                 _redStream.startStream(_current_file.id_file, _current_file);
-                buffer = new byte[_current_file.size];
-                _redStream.writeToBuffer(ref buffer);
-                _player.play_buffer(ref buffer);
+                buff = Marshal.AllocCoTaskMem(_current_file.size);
+                //buffer = new byte[_current_file.size];
+                //backBuffer = new byte[_current_file.size];
+                //_redStream.writeToBuffer(ref buffer);
+                //_player.play_buffer(ref buffer);
             }
             barSeek.SetRange(0, _timeTotal);
             barProgress.Value = 0;
