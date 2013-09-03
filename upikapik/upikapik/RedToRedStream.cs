@@ -71,7 +71,7 @@ namespace upikapik
                         if (failedRequestQueue.Count != 0)
                             startConnect(failedRequestQueue.Dequeue());
                         else if(starpostQueue.Count != 0)
-                            startConnect(createReq(filename, blocksize, filesize));
+                            startConnect(createRequest(filename, blocksize, filesize));
                     }
                 }
                 lock (writeQueueLocker)
@@ -196,7 +196,7 @@ namespace upikapik
                     break;
             }
         }
-        private RequestProp createReq(string filename, int blocksize, int filesize)
+        private RequestProp createRequest(string filename, int blocksize, int filesize)
         {
             RequestProp req = new RequestProp();
             req.blockSize = blocksize;
@@ -234,7 +234,7 @@ namespace upikapik
         {
             int frameSize = (144 * fileinfo.bitrate * 1000) / fileinfo.samplerate;
             //return (1500 / frameSize) * frameSize;
-            return (6000 / frameSize) * frameSize;
+            return (12000 / frameSize) * frameSize;
         }            
         public void endEverything()
         {
