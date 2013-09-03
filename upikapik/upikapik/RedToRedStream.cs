@@ -5,6 +5,7 @@ using System.Net;
 using System.Threading;
 using System.Text;
 using System.IO;
+using System.Runtime.InteropServices;
 
 namespace upikapik
 {
@@ -17,8 +18,7 @@ namespace upikapik
         private const int MAX_REQUEST = 10;
         private int startpost;
         int id_file;
-
-        //byte[] bassBuffer;
+        byte[] bassBuffer;
 
         private ManualResetEvent allDone = new ManualResetEvent(false);
         private object createReqLocker = new object();
@@ -48,7 +48,7 @@ namespace upikapik
             string filename = getFilename();
             int blocksize = getBlockSize();
             int filesize = getFileSize();
-            //this.bassBuffer = bassBuffer;
+            bassBuffer = new byte[filesize];
 
             file = new FileStream("music/" + filename, FileMode.OpenOrCreate, FileAccess.Write);
 
@@ -87,6 +87,7 @@ namespace upikapik
                         startTimer.Dispose();
                     }
                 }
+                writeToBuffer(); // write to internal bassBuffer
             }
         }
 
@@ -247,7 +248,26 @@ namespace upikapik
             hosts.Enqueue(host);
             failedRequestQueue.Enqueue(req);
         }
-
+        private void writeToBuffer()
+        {
+            RequestProp req;
+            while (bassBufferQueue.Count != 0)
+            {
+                req = bassBufferQueue.Dequeue();
+                int y = 0;
+                for (int i = req.startPost; i < req.blockSize - 1 + req.startPost; i++)
+                {
+                    if (i == bassBuffer.Length)
+                        break;
+                    bassBuffer[i] = req.receiveBuffer[y];
+                    y++;
+                }
+            }
+        }
+        public void byteToBuffer(IntPtr buff, byte[] buffer)
+        {
+            Marshal.Copy(buffer, 0, buff, buffer.Length);
+        }
         // public method are intented to invoked by external event
         public void writeToBuffer(ref byte[] buffer)
         {
@@ -264,6 +284,10 @@ namespace upikapik
                     y++;
                 }
             }
+        }
+        public byte[] getBuffer()
+        {
+            return bassBuffer;
         }
         public void getHostsAvail(Queue<Hosts> hosts)
         {
