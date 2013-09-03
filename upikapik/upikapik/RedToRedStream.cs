@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Net.Sockets;
 using System.Net;
@@ -16,7 +17,6 @@ namespace upikapik
         file_list fileinfo;
 
         private const int MAX_REQUEST = 10;
-        private int startpost;
         int id_file;
         byte[] bassBuffer;
 
@@ -26,7 +26,7 @@ namespace upikapik
         private object writeFileLocker = new object();
         private bool enable = false;
         private bool enStream = false;
-        private bool enWrite = false;
+        private int startpost = 0;
 
         private Timer startTimer;
         private Queue<RequestProp> writeQueue = new Queue<RequestProp>(MAX_REQUEST);
@@ -34,6 +34,8 @@ namespace upikapik
         private Queue<RequestProp> failedRequestQueue = new Queue<RequestProp>();
         private Queue<int> starpostQueue = new Queue<int>();
         private Queue<Hosts> hosts;
+        private SortedList writedStartpost = new SortedList();
+        private static int lastAdjacentKey = 0;
 
         FileStream file = null;
         ManualResetEvent manualEvent = new ManualResetEvent(false);
@@ -54,7 +56,6 @@ namespace upikapik
 
             enable = true;
             enStream = true;
-            enWrite = true;
             createStartPostQueue(blocksize, filesize);
             startTimer = new Timer(x => { startTimerCallback(filename, blocksize, filesize); }, null, 0, 500); // is it better than forever while?
         }
@@ -159,6 +160,7 @@ namespace upikapik
                     else
                         file.Seek(req.startPost, SeekOrigin.Begin);
                     file.BeginWrite(req.receiveBuffer, 0, req.receiveBuffer.Length, writeCallback, req);
+                    writedStartpost.Add(req.startPost, req.startPost);
                 }
             }
             catch (IOException ex)
@@ -305,6 +307,24 @@ namespace upikapik
                 return true;
             return false;
         }
-
+        public int getLastAdjacentValue()
+        {
+            int next;
+            int current;
+            int blockSize = getBlockSize();
+            int last = 0;
+            for (int i = lastAdjacentKey; i < writedStartpost.Count - 1; i++)
+            {
+                current = (int)writedStartpost.GetByIndex(i) + 1;
+                next = (int)writedStartpost.GetByIndex(i+1);
+                if ((current + blockSize) == next)
+                    last = next;
+                else
+                {
+                    lastAdjacentKey = i - 1;
+                }
+            }
+            return last;
+        }
     }
 }
