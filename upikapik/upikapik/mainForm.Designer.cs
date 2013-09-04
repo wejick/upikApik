@@ -33,12 +33,12 @@
             this.btnPlay = new System.Windows.Forms.Button();
             this.btnOpen = new System.Windows.Forms.Button();
             this.barVol = new System.Windows.Forms.TrackBar();
+            this.checkShuffle = new System.Windows.Forms.CheckBox();
             this.listPlay = new System.Windows.Forms.ListBox();
             this.lblStatus = new System.Windows.Forms.Label();
             this.lytMonitor = new System.Windows.Forms.TableLayoutPanel();
             this.barProgress = new System.Windows.Forms.ProgressBar();
             this.barSeek = new System.Windows.Forms.TrackBar();
-            this.checkShuffle = new System.Windows.Forms.CheckBox();
             this.lytMain.SuspendLayout();
             this.lytFlow.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.barVol)).BeginInit();
@@ -107,6 +107,18 @@
             this.barVol.Value = 10;
             this.barVol.Scroll += new System.EventHandler(this.barVol_Scroll);
             // 
+            // checkShuffle
+            // 
+            this.checkShuffle.Appearance = System.Windows.Forms.Appearance.Button;
+            this.checkShuffle.AutoSize = true;
+            this.checkShuffle.Location = new System.Drawing.Point(275, 3);
+            this.checkShuffle.Name = "checkShuffle";
+            this.checkShuffle.Size = new System.Drawing.Size(50, 23);
+            this.checkShuffle.TabIndex = 3;
+            this.checkShuffle.Text = "Shuffle";
+            this.checkShuffle.UseVisualStyleBackColor = true;
+            this.checkShuffle.CheckedChanged += new System.EventHandler(this.checkBox1_CheckedChanged);
+            // 
             // listPlay
             // 
             this.listPlay.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -162,18 +174,6 @@
             this.barSeek.TickStyle = System.Windows.Forms.TickStyle.None;
             this.barSeek.Scroll += new System.EventHandler(this.barSeek_Scroll);
             // 
-            // checkShuffle
-            // 
-            this.checkShuffle.Appearance = System.Windows.Forms.Appearance.Button;
-            this.checkShuffle.AutoSize = true;
-            this.checkShuffle.Location = new System.Drawing.Point(275, 3);
-            this.checkShuffle.Name = "checkShuffle";
-            this.checkShuffle.Size = new System.Drawing.Size(50, 23);
-            this.checkShuffle.TabIndex = 3;
-            this.checkShuffle.Text = "Shuffle";
-            this.checkShuffle.UseVisualStyleBackColor = true;
-            this.checkShuffle.CheckedChanged += new System.EventHandler(this.checkBox1_CheckedChanged);
-            // 
             // mainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -182,6 +182,7 @@
             this.Controls.Add(this.lytMain);
             this.Name = "mainForm";
             this.Text = "UpikApik";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.mainForm_FormClosing);
             this.Load += new System.EventHandler(this.Form1_Load);
             this.lytMain.ResumeLayout(false);
             this.lytMain.PerformLayout();

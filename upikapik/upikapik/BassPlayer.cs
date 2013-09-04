@@ -10,7 +10,8 @@ using System.Collections.Generic;
 using System.Timers;
 using System.Text;
 using Un4seen.Bass;
-
+using System.IO;
+using System.Runtime.InteropServices;
 namespace upikapik
 {
     class BassPlayer
@@ -20,6 +21,9 @@ namespace upikapik
         private long streamPos; // stream position in byte
         private string path;
         private System.Timers.Timer mainTime;
+        GCHandle fileMem;
+        //
+        byte[] buff;
 
         /*
          * < initialize everything to get bass set and ready >         * 
@@ -217,6 +221,44 @@ namespace upikapik
         private void onMainTime(object source, ElapsedEventArgs e)
         {
             streamPos = Bass.BASS_ChannelGetPosition(stream);
+        }
+
+        // experiment
+        public void playFromMemory(string path)
+        {
+            this.setPath(path);
+            BASS_CHANNELINFO info = new BASS_CHANNELINFO();
+
+            // copy a part of file to buffer
+            FileStream fs = new FileStream(path, FileMode.Open);
+            buff = new byte[fs.Length];
+            fs.Read(buff, 0, buff.Length);
+            fs.Close();
+            //pin buffer address
+            fileMem = GCHandle.Alloc(buff, GCHandleType.Pinned);
+            if ((stream = Bass.BASS_StreamCreateFile(fileMem.AddrOfPinnedObject(),0L,buff.Length,BASSFlag.BASS_SAMPLE_FLOAT)) != 0)
+            {
+                Bass.BASS_ChannelGetInfo(stream, info);
+                Bass.BASS_ChannelSetAttribute(stream, BASSAttribute.BASS_ATTRIB_FREQ, info.freq);
+                //Bass.BASS_StreamPutData(stream, buff, buff.Length);
+                Bass.BASS_ChannelPlay(stream, false);
+                // copy another part of file to buffer
+                fs = new FileStream(path, FileMode.Open);
+                byte[] buffy = new byte[fs.Length - fs.Length / 20];
+                fs.Seek(fs.Length / 20, SeekOrigin.Begin);
+                fs.Read(buffy, 0, buffy.Length);
+                fs.Close();
+                Marshal.Copy(buffy, 0, fileMem.AddrOfPinnedObject(), buffy.Length);
+                
+
+                streamLen = Bass.BASS_ChannelGetLength(stream);
+            }
+            else
+                throw new System.InvalidOperationException("Can't open file to play");
+        }
+        public void freeMem()
+        {
+            fileMem.Free();
         }
     }
 }

@@ -98,7 +98,8 @@ namespace upikapik
 
         private void play()
         {
-            player.play(paths[indexOfPlayedFile]);
+            //player.play(paths[indexOfPlayedFile]);
+            player.playFromMemory(paths[indexOfPlayedFile]);
             timeTotal = player.getLenSec();
             barSeek.SetRange(0, timeTotal);
             this.Text = "UpikApik : " + player.getFileName();
@@ -119,6 +120,11 @@ namespace upikapik
             }
             else
                 shuffle = false;
+        }
+
+        private void mainForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            player.freeMem();
         }
     }
 }
