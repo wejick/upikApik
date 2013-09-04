@@ -111,7 +111,7 @@ namespace upikapik
         {
             int frameSize;
             if (boolPadding)
-                frameSize = (144 * (intBitRate*1000) / intFrequency) + 1;
+                frameSize = (144 * (intBitRate * 1000) / intFrequency) + 1;
             else
                 frameSize = (144 * (intBitRate * 1000) / intFrequency);
             return frameSize;

@@ -54,7 +54,7 @@ namespace upikapik
             dynamic files = from file_list f in db select f;
             //fileCnt = files.count();
             fileCnt = 0;
-            foreach(var item in files)
+            foreach (var item in files)
             {
                 fileList.Add(item);
                 fileCnt++;
@@ -171,11 +171,11 @@ namespace upikapik
             storeFileAvailable(createInfo(filePath, block_avail));
         }
         // block_avail = 0 is full
-        public file_available createInfo(string filePath,int block_avail=0)
+        public file_available createInfo(string filePath, int block_avail = 0)
         {
             MP3Header reader = new MP3Header();
             file_available file = new file_available();
-            
+
             reader.ReadMP3Information(filePath);
             file.nama = Path.GetFileName(Uri.UnescapeDataString(filePath).Replace("/", "\\"));
             file.bitrate = reader.intBitRate;
@@ -191,21 +191,21 @@ namespace upikapik
             {
                 file.block_avail = block_avail;
                 file.full = false;
-            }            
+            }
 
             return file;
         }
         public void storeFileAvailable(file_available file)
         {
             int fileIdInHub = getIdFromName(file.nama);
-            this.command("ADD;"+file.nama+";"+file.bitrate+";"+file.samplerate+";"+file.size);
+            this.command("ADD;" + file.nama + ";" + file.bitrate + ";" + file.samplerate + ";" + file.size);
             Thread.Sleep(500);
             //this.commandSerialize("FL");
             dynamic t = from file_list sip in db select sip;
             //dynamic f = from file_list sip in db where sip.nama.Equals(file.nama) select sip;
             foreach (var item in t)
             {
-                if(item.nama == file.nama)
+                if (item.nama == file.nama)
                     fileIdInHub = item.id_file;
             }
             db.Store(file);
@@ -214,7 +214,7 @@ namespace upikapik
         // we can't do this because we not yet get the list before add it.
         public int getIdFromName(string name)
         {
-            int id_file=0;
+            int id_file = 0;
             dynamic f = from file_list g in db where g.nama.Equals(name) select g;
             foreach (var item in f)
             {
@@ -224,7 +224,7 @@ namespace upikapik
         }
         public Queue<Hosts> getAvailableHost(string nama)
         {
-            Hosts host = new Hosts();            
+            Hosts host = new Hosts();
             Queue<Hosts> hosts = new Queue<Hosts>();
 
             String strHostName = Dns.GetHostName();
@@ -232,7 +232,7 @@ namespace upikapik
             IPAddress[] addr = ipEntry.AddressList;
 
             dynamic obj = from file_host_rel f in db where f.nama.Equals(nama) select f;
-            foreach(var item in obj)
+            foreach (var item in obj)
             {
                 foreach (IPAddress address in addr)
                 {

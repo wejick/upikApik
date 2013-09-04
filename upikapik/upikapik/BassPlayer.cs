@@ -216,7 +216,7 @@ namespace upikapik
          * */
         public void seek(int pos)
         {
-            if(local)
+            if (local)
                 Bass.BASS_ChannelSetPosition(stream, (double)pos);
             else
                 Bass.BASS_ChannelSetPosition(stream, (double)pos);

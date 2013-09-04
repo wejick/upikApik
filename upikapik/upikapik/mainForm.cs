@@ -5,7 +5,7 @@ using System.Net.Sockets;
 using System.IO;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
-//using System.Threading;
+
 namespace upikapik
 {
     public partial class mainForm : Form
@@ -14,7 +14,7 @@ namespace upikapik
         BassPlayer _player;
         private OpenFileDialog _opnFile;
         string _appDir;
-        
+
         // bass player things
         string[] _paths;
         file_list _current_file;
@@ -26,18 +26,17 @@ namespace upikapik
         Random _rand = new Random();
         bool local = false;
 
-        int available_block = 0;
         int frame_size = 0;
         int lastStartpost = 0;
         int available_sec = 0;
         int block_size = 0;
+
         // timer
         Timer _timerPlayer;
         Timer _timerRed; // May can be if implemented in redToHub
 
         // another HMR component
-        RedToHub _toHub = new RedToHub("RedDb.db4o","192.168.0.33",1337); // need to be esier to change
-        //RedServ _server = new RedServ("127.0.0.1", 1337);
+        RedToHub _toHub = new RedToHub("RedDb.db4o", "192.168.0.33", 1337); // need to be esier to change
         AsynchRedServ _server = new AsynchRedServ("192.168.0.7", 1338);// need to be esier to change
         System.Threading.Thread tRedServ;
         AsynchRedStream _redStream = new AsynchRedStream();
@@ -60,7 +59,7 @@ namespace upikapik
             _timerRed.Start();
 
             _toHub.command("NA");
-            
+
             tRedServ = new System.Threading.Thread(() => { _server.startListening(); });
             tRedServ.Start();
 
@@ -90,8 +89,8 @@ namespace upikapik
                         MessageBox.Show(ex.Message, "Failed to copy file");
                         fail = true;
                     }
-                    if(!fail)
-                        _toHub.addFileAvail(path,0);
+                    if (!fail)
+                        _toHub.addFileAvail(path, 0);
                 }
             }
             else
@@ -105,7 +104,7 @@ namespace upikapik
 
         private void listPlay_DoubleClick(object sender, EventArgs e)
         {
-            if(listPlay.Items.Count != 0 )
+            if (listPlay.Items.Count != 0)
             {
                 _indexOfPlayedFile = listPlay.SelectedIndex;
                 // set current file
@@ -124,9 +123,9 @@ namespace upikapik
             available_sec = (int)((lastStartpost / frame_size) * 0.026);
             barProgress.Value = (available_sec / _timeTotal) * 100;
 
-            if(_timeCurrent != -1)
+            if (_timeCurrent != -1)
                 barSeek.Value = _timeCurrent;
-            
+
             // play next song
             /*if ((listPlay.Items.Count-1 > _indexOfPlayedFile) && !(_player.isActive()) && !_shuffle)
             {
@@ -138,11 +137,6 @@ namespace upikapik
                 _indexOfPlayedFile = _rand.Next(0, listPlay.Items.Count);
                 play();
             }*/
-            
-            if (!local)
-            {
-               
-            }
         }
         private void onTimerRed(object source, EventArgs e)
         {
@@ -172,21 +166,26 @@ namespace upikapik
             }
             else
             {
-                //get host info before playing
+                //clean the stream properties
                 _redStream.stopStream();
                 _redStream.closeFile();
+
+                //get host info before playing                
                 _toHub.command("FD;" + _current_file.id_file);
                 System.Threading.Thread.Sleep(200);
                 _redStream.getHostsAvail(_toHub.getAvailableHost(_current_file.nama));
 
+                //start stream
                 _redStream.startStream(_current_file.id_file, _current_file);
 
+                //get streaming properties
                 block_size = _redStream.getBlockSize();
                 frame_size = _redStream.getFrameSize();
-                _timeTotal = (int)((_current_file.size / frame_size) * 0.026);
+                _timeTotal = _player.getLenSec();
+                //_timeTotal = (int)((_current_file.size / frame_size) * 0.026);
             }
             barSeek.SetRange(0, _timeTotal);
-            barProgress.Value = 0;            
+            barProgress.Value = 0;
             this.Text = "UpikApik : " + _player.getFileName();
             barVol.Value = _player.getVolume();
         }
