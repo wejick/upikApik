@@ -16,7 +16,6 @@ namespace upikapik
     class BassPlayer
     {
         private int stream;
-        private int channel;
         private long streamLen; // stream size in byte
         private long streamPos; // stream position in byte
         private string path;
@@ -161,21 +160,10 @@ namespace upikapik
          * < Play the stream from buffer>
          * @param buffer of played file
          * */
-        public void play_buffer(ref byte[] buffer)
+        public void play_buffer(IntPtr buffer)
         {
             local = false;
-            if (Bass.BASS_ChannelIsActive(stream) == BASSActive.BASS_ACTIVE_PLAYING || 
-                Bass.BASS_ChannelIsActive(stream) == BASSActive.BASS_ACTIVE_PLAYING)
-            {
-                Bass.BASS_StreamFree(stream);
-                Bass.BASS_StreamFree(channel);
-            }
-            if ((stream = Bass.BASS_SampleLoad(buffer,0,buffer.Length,1,BASSFlag.BASS_DEFAULT)) != 0)
-            {
-                channel = Bass.BASS_SampleGetChannel(stream, false);
-                Bass.BASS_ChannelPlay(channel, false);
-                streamLen = Bass.BASS_ChannelGetLength(channel);
-            }
+
         }
         /*
          * < Play the stream from buffer>
@@ -184,17 +172,13 @@ namespace upikapik
         public void play_buffer(IntPtr buffer, int length)
         {
             local = false;
-            if (Bass.BASS_ChannelIsActive(stream) == BASSActive.BASS_ACTIVE_PLAYING ||
-                Bass.BASS_ChannelIsActive(stream) == BASSActive.BASS_ACTIVE_PLAYING)
+            if (Bass.BASS_ChannelIsActive(stream) == BASSActive.BASS_ACTIVE_PLAYING)
             {
                 Bass.BASS_StreamFree(stream);
-                Bass.BASS_StreamFree(channel);
             }
-            if ((stream = Bass.BASS_SampleLoad(buffer,0,length,1,BASSFlag.BASS_DEFAULT)) != 0)
+            if ((stream = Bass.BASS_StreamCreateFile(buffer, 0L, length, BASSFlag.BASS_DEFAULT)) != 0)
             {
-                channel = Bass.BASS_SampleGetChannel(stream, false);
-                Bass.BASS_ChannelPlay(channel, false);
-                streamLen = Bass.BASS_ChannelGetLength(channel);
+                Bass.BASS_ChannelPlay(stream, false);
             }
         }
         /*
@@ -203,40 +187,19 @@ namespace upikapik
          * */
         public void pause_resume()
         {
-            if (local)
+            if (stream != 0)
             {
-                if (stream != 0)
+                // if stream playing, pause it
+                if (Bass.BASS_ChannelIsActive(stream) == BASSActive.BASS_ACTIVE_PLAYING)
                 {
-                    // if stream playing, pause it
-                    if (Bass.BASS_ChannelIsActive(stream) == BASSActive.BASS_ACTIVE_PLAYING)
-                    {
-                        Bass.BASS_ChannelPause(stream);
-                        mainTime.Stop();
-                    }
-                    // if stream paused, play it
-                    else if (Bass.BASS_ChannelIsActive(stream) == BASSActive.BASS_ACTIVE_PAUSED)
-                    {
-                        mainTime.Start();
-                        Bass.BASS_ChannelPlay(stream, false);
-                    }
+                    Bass.BASS_ChannelPause(stream);
+                    mainTime.Stop();
                 }
-            }
-            else
-            {
-                if (channel != 0)
+                // if stream paused, play it
+                else if (Bass.BASS_ChannelIsActive(stream) == BASSActive.BASS_ACTIVE_PAUSED)
                 {
-                    // if stream playing, pause it
-                    if (Bass.BASS_ChannelIsActive(channel) == BASSActive.BASS_ACTIVE_PLAYING)
-                    {
-                        Bass.BASS_ChannelPause(channel);
-                        mainTime.Stop();
-                    }
-                    // if stream paused, play it
-                    else if (Bass.BASS_ChannelIsActive(channel) == BASSActive.BASS_ACTIVE_PAUSED)
-                    {
-                        mainTime.Start();
-                        Bass.BASS_ChannelPlay(channel, false);
-                    }
+                    mainTime.Start();
+                    Bass.BASS_ChannelPlay(stream, false);
                 }
             }
         }
