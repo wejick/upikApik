@@ -25,9 +25,6 @@ namespace upikapik
         List<file_list> playList = new List<file_list>();
         Random _rand = new Random();
         bool local = false;
-        byte[] buffer = null;
-        byte[] backBuffer = null;
-        IntPtr buff = IntPtr.Zero;
 
         int available_block = 0;
         int frame_size = 0;
@@ -37,9 +34,7 @@ namespace upikapik
         // timer
         Timer _timerPlayer;
         Timer _timerRed; // May can be if implemented in redToHub
-        int intervalCounter = 0;
-        int intervalPlay = 0;
-        int intervalBuffer = 0;
+
         // another HMR component
         RedToHub _toHub = new RedToHub("RedDb.db4o","192.168.0.33",1337); // need to be esier to change
         //RedServ _server = new RedServ("127.0.0.1", 1337);
@@ -116,15 +111,12 @@ namespace upikapik
                 // set current file
                 _current_file = playList.Find(p => p.nama.Equals(listPlay.SelectedItem));
                 play();
-                _timerPlayer.Start();
+                //_timerPlayer.Start();
             }
         }
 
         private void onTimerPlayer(object source, EventArgs e)
         {
-            intervalCounter++;
-            intervalPlay++;
-            intervalBuffer++;
             _timeCurrent = _player.getPosSec();
             lblStatus.Text = "Time : " + s2t(_timeTotal) + " / " + s2t(_player.getPosSec());
 
@@ -132,8 +124,8 @@ namespace upikapik
             available_sec = (int)((lastStartpost / frame_size) * 0.026);
             barProgress.Value = (available_sec / _timeTotal) * 100;
 
-            //if(_timeCurrent != -1)
-            //    barSeek.Value = _timeCurrent;
+            if(_timeCurrent != -1)
+                barSeek.Value = _timeCurrent;
             
             // play next song
             /*if ((listPlay.Items.Count-1 > _indexOfPlayedFile) && !(_player.isActive()) && !_shuffle)
@@ -146,46 +138,10 @@ namespace upikapik
                 _indexOfPlayedFile = _rand.Next(0, listPlay.Items.Count);
                 play();
             }*/
-
-            // pause when buffering
-            // belum bisa karena _redToHub.updateFileInfo belum dijalankan           
             
-            //barProgress.Value = (_current_file.size / ((_current_file.size / block_size) * block_size)) * 100;
             if (!local)
             {
-                if (intervalCounter == 40) // update available block after 4 second
-                {
-                    if (!local)
-                    {
-                        //_toHub.command("UP;" + _current_file.id_file + ";" + _toHub.getBlockAvailableSize(_current_file.nama));
-                        //_toHub.command("FD;" + _current_file.id_file);
-                    }
-                    intervalCounter = 0;
-                }
-                //_redStream.writeToBuffer(ref backBuffer);
-                if (intervalPlay == 20)
-                {
-                    //buffer = backBuffer;
-                    buffer = _redStream.getBuffer();
-                    _redStream.byteToBuffer(buff, buffer);
-                    _player.play_buffer(buff, _current_file.size);
-                    
-                    //_player.play_buffer(ref buffer);
-                }
-                if (intervalBuffer == 5)
-                {
-                    buffer = _redStream.getBuffer();
-                    _redStream.byteToBuffer(buff, buffer);
-                    intervalBuffer = 0;
-                }
-
-                /*
-                if (!(_redStream.isWriteQueueFull()))
-                {
-                    _redStream.writeToBuffer(ref buffer);
-                    //_redStream.getHostsAvail(_toHub.getAvailableHost(_current_file.nama));
-                }
-                 */
+               
             }
         }
         private void onTimerRed(object source, EventArgs e)
@@ -222,16 +178,12 @@ namespace upikapik
                 _toHub.command("FD;" + _current_file.id_file);
                 System.Threading.Thread.Sleep(200);
                 _redStream.getHostsAvail(_toHub.getAvailableHost(_current_file.nama));
-                
+
                 _redStream.startStream(_current_file.id_file, _current_file);
-                buff = Marshal.AllocCoTaskMem(_current_file.size);
+
                 block_size = _redStream.getBlockSize();
                 frame_size = _redStream.getFrameSize();
                 _timeTotal = (int)((_current_file.size / frame_size) * 0.026);
-                //buffer = new byte[_current_file.size];
-                //backBuffer = new byte[_current_file.size];
-                //_redStream.writeToBuffer(ref buffer);
-                //_player.play_buffer(ref buffer);
             }
             barSeek.SetRange(0, _timeTotal);
             barProgress.Value = 0;            
