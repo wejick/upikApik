@@ -260,6 +260,59 @@ namespace upikapik
             Marshal.Copy(buffer, 0, buff, buffer.Length);
         }
         // public method are intented to invoked by external event
+        public void closeFile()
+        {
+            if (file != null)
+                file.Close();
+        }
+        public int getBlockSize()
+        {
+            int frameSize = (144 * fileinfo.bitrate * 1000) / fileinfo.samplerate;
+            //return (1500 / frameSize) * frameSize;
+            return (12000 / frameSize) * frameSize;
+        }
+        public byte[] getBuffer()
+        {
+            return bassBuffer;
+        }
+        public int getFrameSize()
+        {
+            int frameSize = (144 * fileinfo.bitrate * 1000) / fileinfo.samplerate;
+            return frameSize;
+        }
+        public void getHostsAvail(Queue<Hosts> hosts)
+        {
+            this.hosts = hosts;
+        }
+        public int getLastAdjacentValue()
+        {
+            int next;
+            int current;
+            int blockSize = getBlockSize();
+            int last = 0;
+            for (int i = lastAdjacentKey; i < writedStartpost.Count - 1; i++)
+            {
+                current = (int)writedStartpost.GetByIndex(i) + 1;
+                next = (int)writedStartpost.GetByIndex(i + 1);
+                if ((current + blockSize) == next)
+                    last = next;
+                else
+                {
+                    lastAdjacentKey = i - 1;
+                }
+            }
+            return last;
+        }
+        public bool isWriteQueueFull()
+        {
+            if (writeQueue.Count == MAX_REQUEST)
+                return true;
+            return false;
+        }
+        public void stopStream()
+        {
+            enable = false;
+        }
         public void writeToBuffer(ref byte[] buffer)
         {
             RequestProp req;
@@ -275,61 +328,6 @@ namespace upikapik
                     y++;
                 }
             }
-        }
-        public byte[] getBuffer()
-        {
-            return bassBuffer;
-        }
-        public void getHostsAvail(Queue<Hosts> hosts)
-        {
-            //if (this.hosts.Count != 0)
-            //    this.hosts.Clear();
-            this.hosts = hosts;
-        }
-        public void stopStream()
-        {
-            enable = false;
-        }
-        public bool isWriteQueueFull()
-        {
-            if (writeQueue.Count == MAX_REQUEST)
-                return true;
-            return false;
-        }
-        public int getLastAdjacentValue()
-        {
-            int next;
-            int current;
-            int blockSize = getBlockSize();
-            int last = 0;
-            for (int i = lastAdjacentKey; i < writedStartpost.Count - 1; i++)
-            {
-                current = (int)writedStartpost.GetByIndex(i) + 1;
-                next = (int)writedStartpost.GetByIndex(i+1);
-                if ((current + blockSize) == next)
-                    last = next;
-                else
-                {
-                    lastAdjacentKey = i - 1;
-                }
-            }
-            return last;
-        }
-        public void closeFile()
-        {
-            if (file != null)
-                file.Close();
-        }
-        public int getBlockSize()
-        {
-            int frameSize = (144 * fileinfo.bitrate * 1000) / fileinfo.samplerate;
-            //return (1500 / frameSize) * frameSize;
-            return (12000 / frameSize) * frameSize;
-        }
-        public int getFrameSize()
-        {
-            int frameSize = (144 * fileinfo.bitrate * 1000) / fileinfo.samplerate;
-            return frameSize;
         }
     }
 }
