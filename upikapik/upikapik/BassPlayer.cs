@@ -208,10 +208,7 @@ namespace upikapik
          * */
         public void stop()
         {
-            if(local)
-                Bass.BASS_ChannelStop(stream);
-            else
-                Bass.BASS_ChannelStop(channel);
+            Bass.BASS_ChannelStop(stream);
         }
         /*
          * < Seek the stream to certain position >
@@ -257,10 +254,7 @@ namespace upikapik
          * */
         private void onMainTime(object source, ElapsedEventArgs e)
         {
-            if(local)
-                streamPos = Bass.BASS_ChannelGetPosition(stream);
-            else
-                streamPos = Bass.BASS_ChannelGetPosition(channel);
+            streamPos = Bass.BASS_ChannelGetPosition(stream);
         }
     }
 }
