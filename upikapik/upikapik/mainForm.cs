@@ -28,6 +28,12 @@ namespace upikapik
         byte[] buffer = null;
         byte[] backBuffer = null;
         IntPtr buff = IntPtr.Zero;
+
+        int available_block = 0;
+        int frame_size = 0;
+        int lastStartpost = 0;
+        int available_sec = 0;
+        int block_size = 0;
         // timer
         Timer _timerPlayer;
         Timer _timerRed; // May can be if implemented in redToHub
@@ -121,6 +127,11 @@ namespace upikapik
             intervalBuffer++;
             _timeCurrent = _player.getPosSec();
             lblStatus.Text = "Time : " + s2t(_timeTotal) + " / " + s2t(_player.getPosSec());
+
+            lastStartpost = _redStream.getLastAdjacentValue();
+            available_sec = (int)((lastStartpost / frame_size) * 0.026);
+            barProgress.Value = (available_sec / _timeTotal) * 100;
+
             //if(_timeCurrent != -1)
             //    barSeek.Value = _timeCurrent;
             
@@ -137,10 +148,8 @@ namespace upikapik
             }*/
 
             // pause when buffering
-            // belum bisa karena _redToHub.updateFileInfo belum dijalankan
-            int available_block = _toHub.getBlockAvailableSize(_current_file.nama);
-            int block_size = ((144 * _current_file.bitrate * 1000) / _current_file.samplerate);
-            int available_sec = (int)(available_block * 0.026);
+            // belum bisa karena _redToHub.updateFileInfo belum dijalankan           
+            
             //barProgress.Value = (_current_file.size / ((_current_file.size / block_size) * block_size)) * 100;
             if (!local)
             {
@@ -209,20 +218,23 @@ namespace upikapik
             {
                 //get host info before playing
                 _redStream.stopStream();
-                _redStream.endEverything();
+                _redStream.closeFile();
                 _toHub.command("FD;" + _current_file.id_file);
                 System.Threading.Thread.Sleep(200);
                 _redStream.getHostsAvail(_toHub.getAvailableHost(_current_file.nama));
                 
                 _redStream.startStream(_current_file.id_file, _current_file);
                 buff = Marshal.AllocCoTaskMem(_current_file.size);
+                block_size = _redStream.getBlockSize();
+                frame_size = _redStream.getFrameSize();
+                _timeTotal = (int)((_current_file.size / frame_size) * 0.026);
                 //buffer = new byte[_current_file.size];
                 //backBuffer = new byte[_current_file.size];
                 //_redStream.writeToBuffer(ref buffer);
                 //_player.play_buffer(ref buffer);
             }
             barSeek.SetRange(0, _timeTotal);
-            barProgress.Value = 0;
+            barProgress.Value = 0;            
             this.Text = "UpikApik : " + _player.getFileName();
             barVol.Value = _player.getVolume();
         }
