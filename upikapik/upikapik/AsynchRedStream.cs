@@ -65,13 +65,13 @@ namespace upikapik
             startTimer.Change(0, 500);
             if (enable)
             {
-                if(enStream)
+                if (enStream)
                 {
                     if (!(isWriteQueueFull()))
-                    {                       
+                    {
                         if (failedRequestQueue.Count != 0)
                             startConnect(failedRequestQueue.Dequeue());
-                        else if(starpostQueue.Count != 0)
+                        else if (starpostQueue.Count != 0)
                             startConnect(createRequest(filename, blocksize, filesize));
                     }
                 }
@@ -174,7 +174,7 @@ namespace upikapik
             file.EndWrite(result);
             if (writeQueue.Count == 0 && enStream == false)
             {
-                    //endEverything();
+                //endEverything();
             }
         }
 
@@ -194,7 +194,7 @@ namespace upikapik
                 else
                     startpost = startpost + blocksize + 1;
                 starpostQueue.Enqueue(startpost);
-                if (startpost+blocksize >= filesize)
+                if (startpost + blocksize >= filesize)
                     break;
             }
         }
@@ -205,10 +205,10 @@ namespace upikapik
             req.filename = filename;
             req.startPost = starpostQueue.Dequeue();
             req.peer = new IPEndPoint(IPAddress.Any, 1338);
-            
+
             if ((startpost + blocksize) > filesize)
                 req.blockSize = filesize - req.startPost + 1;
-            
+
             lock (createReqLocker)
             {
                 // get the address then enqueue it again
