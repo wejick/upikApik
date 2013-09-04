@@ -232,17 +232,6 @@ namespace upikapik
         {
             return fileinfo.size;
         }
-        private int getBlockSize()
-        {
-            int frameSize = (144 * fileinfo.bitrate * 1000) / fileinfo.samplerate;
-            //return (1500 / frameSize) * frameSize;
-            return (12000 / frameSize) * frameSize;
-        }            
-        public void endEverything()
-        {
-            if(file != null)
-                file.Close();
-        }
         private void enqueueFailedRequest(RequestProp req)
         {
             Hosts host = hosts.Dequeue();
@@ -325,6 +314,22 @@ namespace upikapik
                 }
             }
             return last;
+        }
+        public void closeFile()
+        {
+            if (file != null)
+                file.Close();
+        }
+        public int getBlockSize()
+        {
+            int frameSize = (144 * fileinfo.bitrate * 1000) / fileinfo.samplerate;
+            //return (1500 / frameSize) * frameSize;
+            return (12000 / frameSize) * frameSize;
+        }
+        public int getFrameSize()
+        {
+            int frameSize = (144 * fileinfo.bitrate * 1000) / fileinfo.samplerate;
+            return frameSize;
         }
     }
 }
