@@ -158,16 +158,8 @@ namespace upikapik
         }
         /*
          * < Play the stream from buffer>
-         * @param buffer of played file
-         * */
-        public void play_buffer(IntPtr buffer)
-        {
-            local = false;
-
-        }
-        /*
-         * < Play the stream from buffer>
          * @param intptr of buffer of played file
+         * @param length of file
          * */
         public void play_buffer(IntPtr buffer, int length)
         {
