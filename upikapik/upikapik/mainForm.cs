@@ -276,5 +276,16 @@ namespace upikapik
             _server.enable = false;
             ((IDisposable)_server).Dispose();
         }
+
+        private void btnStop_Click(object sender, EventArgs e)
+        {
+            _player.stop();
+            if (!local)
+            {
+                _redStream.stopStream();
+                _redStream.closeFile();
+            }
+        }
+
     }
 }
