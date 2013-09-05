@@ -30,12 +30,16 @@ namespace upikapik
 
         private Timer startTimer;
         private Queue<RequestProp> writeQueue = new Queue<RequestProp>(MAX_REQUEST);
+        private SortedList bufferList = new SortedList();
         private Queue<RequestProp> bassBufferQueue = new Queue<RequestProp>();
         private Queue<RequestProp> failedRequestQueue = new Queue<RequestProp>();
         private Queue<int> starpostQueue = new Queue<int>();
         private Queue<Hosts> hosts;
         private SortedList writedStartpost = new SortedList();
         private static int lastAdjacentKey = 0;
+        private static int writeTurnBuffer = 0;
+
+        int blocksize;
 
         FileStream file = null;
         ManualResetEvent manualEvent = new ManualResetEvent(false);
@@ -48,7 +52,7 @@ namespace upikapik
             this.fileinfo = fileinfo;
             this.id_file = id_file;
             string filename = getFilename();
-            int blocksize = getBlockSize();
+            blocksize = getBlockSize();
             int filesize = getFileSize();
             bassBuffer = new byte[filesize];
 
@@ -87,8 +91,8 @@ namespace upikapik
                         stopStream();
                         startTimer.Dispose();
                     }
+                    writeToBuffer();
                 }
-                writeToBuffer(); // write to internal bassBuffer
             }
         }
 
@@ -144,7 +148,7 @@ namespace upikapik
             lock (writeQueueLocker)
             {
                 writeQueue.Enqueue(req);
-                bassBufferQueue.Enqueue(req);
+                bufferList.Add(req.startPost, req);
             }
         }
         private void writeToFile(RequestProp req) // write to file
@@ -175,6 +179,26 @@ namespace upikapik
             if (writeQueue.Count == 0 && enStream == false)
             {
                 //endEverything();
+            }
+        }
+        private void writeToBuffer()
+        {
+            if (bufferList.Count != 0)
+            {
+                RequestProp tmp = (RequestProp)bufferList.GetByIndex(0);
+                if (tmp.startPost == writeTurnBuffer)
+                {
+                    int y = 0;
+                    for (int i = tmp.startPost; i < tmp.blockSize - 1 + tmp.startPost; i++)
+                    {
+                        if (i == bassBuffer.Length)
+                            break;
+                        bassBuffer[i] = tmp.receiveBuffer[y];
+                        y++;
+                    }
+                    bufferList.Remove(tmp.startPost);
+                    writeTurnBuffer = writeTurnBuffer + blocksize + 1;
+                }
             }
         }
 
@@ -239,27 +263,7 @@ namespace upikapik
             hosts.Enqueue(host);
             failedRequestQueue.Enqueue(req);
         }
-        private void writeToBuffer()
-        {
-            RequestProp req;
-            while (bassBufferQueue.Count != 0)
-            {
-                req = bassBufferQueue.Dequeue();
-                int y = 0;
-                for (int i = req.startPost; i < req.blockSize - 1 + req.startPost; i++)
-                {
-                    if (i == bassBuffer.Length)
-                        break;
-                    bassBuffer[i] = req.receiveBuffer[y];
-                    y++;
-                }
-            }
-        }
-        public void byteToBuffer(IntPtr buff, byte[] buffer)
-        {
-            Marshal.Copy(buffer, 0, buff, buffer.Length);
-        }
-        // public method are intented to invoked by external event
+        // public method are intended to invoked by external event
         public void closeFile()
         {
             if (file != null)
@@ -303,6 +307,21 @@ namespace upikapik
             }
             return last;
         }
+        public int getLastAdjacentBufferValue()
+        {
+            RequestProp next;
+            RequestProp current;
+            int blockSize = getBlockSize();
+            int last = 0;
+            for (int i = 0; i < bufferList.Count - 1; i++)
+            {
+                current = (RequestProp) bufferList.GetByIndex(i);
+                next = (RequestProp) bufferList.GetByIndex(i + 1);
+                if ((current.startPost + 1  + blockSize) == next.startPost)
+                    last = next.startPost;
+            }
+            return last;
+        }
         public bool isWriteQueueFull()
         {
             if (writeQueue.Count == MAX_REQUEST)
@@ -313,21 +332,9 @@ namespace upikapik
         {
             enable = false;
         }
-        public void writeToBuffer(ref byte[] buffer)
+        public void writeToStream(IntPtr streamBuffer)
         {
-            RequestProp req;
-            while (bassBufferQueue.Count != 0)
-            {
-                req = bassBufferQueue.Dequeue();
-                int y = 0;
-                for (int i = req.startPost; i < req.blockSize - 1 + req.startPost; i++)
-                {
-                    if (i == buffer.Length)
-                        break;
-                    buffer[i] = req.receiveBuffer[y];
-                    y++;
-                }
-            }
+            Marshal.Copy(bassBuffer, 0, streamBuffer, bassBuffer.Length);
         }
     }
 }
