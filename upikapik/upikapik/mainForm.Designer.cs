@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(mainForm));
             this.lytMain = new System.Windows.Forms.TableLayoutPanel();
             this.lytFlow = new System.Windows.Forms.FlowLayoutPanel();
             this.btnPlay = new System.Windows.Forms.Button();
@@ -65,7 +66,7 @@
             this.lytMain.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 35F));
             this.lytMain.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.lytMain.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
-            this.lytMain.Size = new System.Drawing.Size(535, 291);
+            this.lytMain.Size = new System.Drawing.Size(520, 291);
             this.lytMain.TabIndex = 0;
             // 
             // lytFlow
@@ -81,7 +82,7 @@
             this.lytFlow.Location = new System.Drawing.Point(3, 70);
             this.lytFlow.MaximumSize = new System.Drawing.Size(0, 40);
             this.lytFlow.Name = "lytFlow";
-            this.lytFlow.Size = new System.Drawing.Size(529, 29);
+            this.lytFlow.Size = new System.Drawing.Size(514, 29);
             this.lytFlow.TabIndex = 0;
             // 
             // btnPlay
@@ -161,7 +162,7 @@
             this.listPlay.FormattingEnabled = true;
             this.listPlay.Location = new System.Drawing.Point(3, 105);
             this.listPlay.Name = "listPlay";
-            this.listPlay.Size = new System.Drawing.Size(529, 163);
+            this.listPlay.Size = new System.Drawing.Size(514, 163);
             this.listPlay.TabIndex = 1;
             this.listPlay.SelectedIndexChanged += new System.EventHandler(this.listPlay_SelectedIndexChanged);
             this.listPlay.DoubleClick += new System.EventHandler(this.listPlay_DoubleClick);
@@ -172,7 +173,7 @@
             this.lblStatus.Dock = System.Windows.Forms.DockStyle.Fill;
             this.lblStatus.Location = new System.Drawing.Point(3, 271);
             this.lblStatus.Name = "lblStatus";
-            this.lblStatus.Size = new System.Drawing.Size(529, 20);
+            this.lblStatus.Size = new System.Drawing.Size(514, 20);
             this.lblStatus.TabIndex = 2;
             this.lblStatus.Text = "Not Playing";
             // 
@@ -189,7 +190,7 @@
             this.lytMonitor.RowCount = 2;
             this.lytMonitor.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
             this.lytMonitor.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.lytMonitor.Size = new System.Drawing.Size(529, 61);
+            this.lytMonitor.Size = new System.Drawing.Size(514, 61);
             this.lytMonitor.TabIndex = 3;
             // 
             // barProgress
@@ -197,7 +198,7 @@
             this.barProgress.Dock = System.Windows.Forms.DockStyle.Fill;
             this.barProgress.Location = new System.Drawing.Point(3, 33);
             this.barProgress.Name = "barProgress";
-            this.barProgress.Size = new System.Drawing.Size(523, 25);
+            this.barProgress.Size = new System.Drawing.Size(508, 25);
             this.barProgress.TabIndex = 0;
             // 
             // barSeek
@@ -205,7 +206,7 @@
             this.barSeek.Dock = System.Windows.Forms.DockStyle.Fill;
             this.barSeek.Location = new System.Drawing.Point(3, 3);
             this.barSeek.Name = "barSeek";
-            this.barSeek.Size = new System.Drawing.Size(523, 24);
+            this.barSeek.Size = new System.Drawing.Size(508, 24);
             this.barSeek.SmallChange = 6;
             this.barSeek.TabIndex = 1;
             this.barSeek.TickStyle = System.Windows.Forms.TickStyle.None;
@@ -215,8 +216,9 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(535, 291);
+            this.ClientSize = new System.Drawing.Size(520, 291);
             this.Controls.Add(this.lytMain);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "mainForm";
             this.Text = "UpikApik";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.mainForm_FormClosing);
