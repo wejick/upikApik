@@ -128,8 +128,7 @@ namespace upikapik
             lastStartpost = _redStream.getLastValueOfBuffer();
             if (lastStartpost != 0)
             {
-                if (_timeTotal != 0)
-                    barProgress.Value = (int) ((float) lastStartpost / (float) _current_file.size * 100) ;
+                barProgress.Value = (int)((float)lastStartpost / (float)_current_file.size * 100);
             }
             if (_timeCurrent != -1)
                 barSeek.Value = _timeCurrent;
@@ -147,18 +146,6 @@ namespace upikapik
             //write to buffer
             if(!local)
                 _redStream.writeToStream(BufferHandler.AddrOfPinnedObject());
-            
-            // play next song
-            /*if ((listPlay.Items.Count-1 > _indexOfPlayedFile) && !(_player.isActive()) && !_shuffle)
-            {
-                _indexOfPlayedFile++;
-                play();
-            }
-            else if (!(_player.isActive()) && _shuffle)
-            {
-                _indexOfPlayedFile = _rand.Next(0, listPlay.Items.Count);
-                play();
-            }*/
         }
         private void onTimerRed(object source, EventArgs e)
         {
@@ -183,22 +170,15 @@ namespace upikapik
             _player.stop();
             if (_toHub.isFull(_current_file.nama))
             {
+                local = true;
                 _player.play_local("music\\" + _current_file.nama);
                 _timeTotal = _player.getLenSec();
                 barSeek.SetRange(0, _timeTotal);
-                local = true;
             }
             else
             {
                 local = false;
-                try
-                {
-                    BufferHandler.Free();
-                }
-                catch (Exception ex)
-                {
-
-                }
+                intervalOne = 0;
                 //clean the stream properties
                 _redStream.stopStream();
                 _redStream.closeFile();
@@ -231,7 +211,7 @@ namespace upikapik
 
             }            
             //barProgress.Value = 0;
-            this.Text = "UpikApik : " + _player.getFileName();
+            this.Text = "UpikApik : " + _current_file.nama;
             barVol.Value = _player.getVolume();
         }
 
@@ -280,6 +260,9 @@ namespace upikapik
         private void btnStop_Click(object sender, EventArgs e)
         {
             _player.stop();
+            barSeek.Value = 0;
+            _timerPlayer.Stop();
+            lblStatus.Text = "Time : 00:00 / 00:00";
             if (!local)
             {
                 _redStream.stopStream();

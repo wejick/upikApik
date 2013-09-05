@@ -51,7 +51,7 @@ namespace upikapik
         {
         }
         public void startStream(int id_file, file_list fileinfo)
-        {
+        {            
             this.fileinfo = fileinfo;
             this.id_file = id_file;
             string filename = getFilename();
@@ -94,6 +94,8 @@ namespace upikapik
                     }
                 }
             }
+            else
+                reset();
         }
         private void startConnect(RequestProp req)
         {
@@ -259,6 +261,14 @@ namespace upikapik
             hosts.Enqueue(host);
             failedRequestQueue.Enqueue(req);
         }
+        private void reset()
+        {
+            bufferTurn = 0;
+            writeTurn = 0;
+            writedStartpost.Clear();
+            writeList.Clear();
+            bufferList.Clear(); 
+        }
         // public method are intended to invoked by external event
         public void closeFile()
         {
@@ -328,9 +338,8 @@ namespace upikapik
         }
         public void stopStream()
         {
-            writeList.Clear();
-            bufferList.Clear();
             enable = false;
+            reset();
         }
         public void writeToStream(IntPtr streamBuffer)
         {
