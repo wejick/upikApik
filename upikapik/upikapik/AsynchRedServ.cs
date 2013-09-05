@@ -73,20 +73,28 @@ namespace upikapik
             }
             else
             {
-                clientStream.Read(buffRead, 0, MSG_LENGTH_BYTE);
-                command = System.Text.Encoding.UTF8.GetString(buffRead);
+                try
+                {
+                    clientStream.Read(buffRead, 0, MSG_LENGTH_BYTE);
+                    command = System.Text.Encoding.UTF8.GetString(buffRead);
 
-                //GET;filename;block_start,size
-                parsedCommand = command.Split(';');
+                    //GET;filename;block_start,size
+                    parsedCommand = command.Split(';');
 
-                filename = parsedCommand[1];
-                startPost = Convert.ToInt32(parsedCommand[2]);
-                size = Convert.ToInt16(parsedCommand[3]);
-                buffSend = new byte[size];
+                    filename = parsedCommand[1];
+                    startPost = Convert.ToInt32(parsedCommand[2]);
+                    size = Convert.ToInt16(parsedCommand[3]);
+                    buffSend = new byte[size];
 
-                buffSend = getblocks(filename, startPost, size);
-                //send
-                clientStream.Write(buffSend, 0, size);
+                    buffSend = getblocks(filename, startPost, size);
+                    //send
+                    clientStream.Write(buffSend, 0, size);
+                }
+                catch (TimeoutException ex)
+                {
+                    clientStream.Close();
+                    client.Close();
+                }
             }
 
             clientStream.Close();
