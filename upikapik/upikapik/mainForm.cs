@@ -14,6 +14,7 @@ namespace upikapik
         BassPlayer _player;
         private OpenFileDialog _opnFile;
         string _appDir;
+        bool local = false;
 
         // streaming things
         byte[] buffer;
@@ -124,22 +125,28 @@ namespace upikapik
             _timeCurrent = _player.getPosSec();
             lblStatus.Text = "Time : " + s2t(_timeTotal) + " / " + s2t(_player.getPosSec());
 
-            lastStartpost = _redStream.getLastAdjacentValue();
-            //available_sec = (int)((lastStartpost / frame_size) * 0.026);
-            //barProgress.Value = (available_sec / _timeTotal) * 100;
-
+            lastStartpost = _redStream.getLastValueOfBuffer();
+            if (lastStartpost != 0)
+            {
+                if (_timeTotal != 0)
+                    barProgress.Value = (int) ((float) lastStartpost / (float) _current_file.size * 100) ;
+            }
             if (_timeCurrent != -1)
                 barSeek.Value = _timeCurrent;
 
-            if (intervalOne == 20)
+            if (intervalOne == 10)
             {
-                _player.play_buffer(BufferHandler.AddrOfPinnedObject(),_current_file.size);
-                _timeTotal = _player.getLenSec();
-                barSeek.SetRange(0, _timeTotal);
+                if (!local)
+                {
+                    _player.play_buffer(BufferHandler.AddrOfPinnedObject(), _current_file.size);
+                    _timeTotal = _player.getLenSec();
+                    barSeek.SetRange(0, _timeTotal);
+                }
             }
 
             //write to buffer
-            _redStream.writeToStream(BufferHandler.AddrOfPinnedObject());
+            if(!local)
+                _redStream.writeToStream(BufferHandler.AddrOfPinnedObject());
             
             // play next song
             /*if ((listPlay.Items.Count-1 > _indexOfPlayedFile) && !(_player.isActive()) && !_shuffle)
@@ -173,14 +180,25 @@ namespace upikapik
 
         private void play()
         {
+            _player.stop();
             if (_toHub.isFull(_current_file.nama))
             {
                 _player.play_local("music\\" + _current_file.nama);
                 _timeTotal = _player.getLenSec();
                 barSeek.SetRange(0, _timeTotal);
+                local = true;
             }
             else
             {
+                local = false;
+                try
+                {
+                    BufferHandler.Free();
+                }
+                catch (Exception ex)
+                {
+
+                }
                 //clean the stream properties
                 _redStream.stopStream();
                 _redStream.closeFile();
@@ -212,7 +230,7 @@ namespace upikapik
                 BufferHandler = GCHandle.Alloc(buffer, GCHandleType.Pinned);
 
             }            
-            barProgress.Value = 0;
+            //barProgress.Value = 0;
             this.Text = "UpikApik : " + _player.getFileName();
             barVol.Value = _player.getVolume();
         }
