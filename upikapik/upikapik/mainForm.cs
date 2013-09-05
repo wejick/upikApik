@@ -128,8 +128,8 @@ namespace upikapik
             //available_sec = (int)((lastStartpost / frame_size) * 0.026);
             //barProgress.Value = (available_sec / _timeTotal) * 100;
 
-            //if (_timeCurrent != -1)
-            //    barSeek.Value = _timeCurrent;
+            if (_timeCurrent != -1)
+                barSeek.Value = _timeCurrent;
 
             if (intervalOne == 20)
             {
