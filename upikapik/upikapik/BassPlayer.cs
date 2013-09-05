@@ -84,7 +84,8 @@ namespace upikapik
          * */
         public int getLenSec()
         {
-            return (int)Bass.BASS_ChannelBytes2Seconds(stream, streamLen);
+            long len = Bass.BASS_ChannelGetLength(stream);
+            return (int)Bass.BASS_ChannelBytes2Seconds(stream, len);
         }
         /*
          * < Get current playback position from stream in byte>
