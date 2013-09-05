@@ -22,7 +22,7 @@ namespace upikapik
 
         private ManualResetEvent allDone = new ManualResetEvent(false);
         private object createReqLocker = new object();
-        private object writeQueueLocker = new object();
+        private object writeBufferLocker = new object();
         private object writeFileLocker = new object();
         private bool enable = false;
         private bool enStream = false;
@@ -31,13 +31,16 @@ namespace upikapik
         private Timer startTimer;
         private Queue<RequestProp> writeQueue = new Queue<RequestProp>(MAX_REQUEST);
         private SortedList bufferList = new SortedList();
+        private SortedList writeList = new SortedList();
         private Queue<RequestProp> bassBufferQueue = new Queue<RequestProp>();
         private Queue<RequestProp> failedRequestQueue = new Queue<RequestProp>();
         private Queue<int> starpostQueue = new Queue<int>();
         private Queue<Hosts> hosts;
         private SortedList writedStartpost = new SortedList();
+
         private static int lastAdjacentKey = 0;
-        private static int writeTurnBuffer = 0;
+        private static int bufferTurn = 0;
+        private static int writeTurn = 0;
 
         int blocksize;
 
@@ -79,13 +82,10 @@ namespace upikapik
                             startConnect(createRequest(filename, blocksize, filesize));
                     }
                 }
-                lock (writeQueueLocker)
+                lock (writeBufferLocker)
                 {
-                    if (writeQueue.Count != 0)
-                    {
-                        writeToFile(writeQueue.Dequeue());
-                    }
-
+                    if (writeList.Count != 0)
+                        writeToFile();
                     else if (writeQueue.Count == 0 && enStream == false)
                     {
                         stopStream();
@@ -145,40 +145,37 @@ namespace upikapik
             req.stream.EndRead(result);
             byte[] receiveBuffer = new byte[req.blockSize];
             receiveBuffer = req.receiveBuffer;
-            lock (writeQueueLocker)
+            lock (writeBufferLocker)
             {
-                writeQueue.Enqueue(req);
+                //writeQueue.Enqueue(req);
+                writeList.Add(req.startPost, req);
                 bufferList.Add(req.startPost, req);
             }
         }
-        private void writeToFile(RequestProp req) // write to file
+        private void writeToFile() // write to file
         {
-            if (req == null)
-                return;
-            try
+            RequestProp req = (RequestProp)writeList.GetByIndex(0);
+            if (req.startPost == writeTurn)
             {
-                lock (writeFileLocker)
+                try
                 {
-                    if (req.startPost == 0)
-                        file.Seek(req.startPost, SeekOrigin.Begin);
-                    else
-                        file.Seek(req.startPost, SeekOrigin.Begin);
-                    file.BeginWrite(req.receiveBuffer, 0, req.receiveBuffer.Length, writeCallback, req);
-                    writedStartpost.Add(req.startPost, req.startPost);
+                    lock (writeFileLocker)
+                    {
+                        if (req.startPost == 0)
+                            file.Seek(req.startPost, SeekOrigin.Begin);
+                        else
+                            file.Seek(req.startPost+1, SeekOrigin.Begin);
+                        //file.BeginWrite(req.receiveBuffer, 0, req.receiveBuffer.Length, writeCallback, req);
+                        file.Write(req.receiveBuffer, 0, req.receiveBuffer.Length);
+                        writedStartpost.Add(req.startPost, req.startPost);
+                        writeList.Remove(req.startPost);
+                        writeTurn = writeTurn + blocksize + 1;
+                    }
                 }
-            }
-            catch (IOException ex)
-            {
+                catch (IOException ex)
+                {
 
-            }
-        }
-        private void writeCallback(IAsyncResult result)
-        {
-            //RequestProp req = (RequestProp)result;
-            file.EndWrite(result);
-            if (writeQueue.Count == 0 && enStream == false)
-            {
-                //endEverything();
+                }
             }
         }
         private void writeToBuffer()
@@ -186,7 +183,7 @@ namespace upikapik
             if (bufferList.Count != 0)
             {
                 RequestProp tmp = (RequestProp)bufferList.GetByIndex(0);
-                if (tmp.startPost == writeTurnBuffer)
+                if (tmp.startPost == bufferTurn)
                 {
                     int y = 0;
                     for (int i = tmp.startPost; i < tmp.blockSize - 1 + tmp.startPost; i++)
@@ -197,7 +194,7 @@ namespace upikapik
                         y++;
                     }
                     bufferList.Remove(tmp.startPost);
-                    writeTurnBuffer = writeTurnBuffer + blocksize + 1;
+                    bufferTurn = bufferTurn + blocksize + 1;
                 }
             }
         }
@@ -315,9 +312,9 @@ namespace upikapik
             int last = 0;
             for (int i = 0; i < bufferList.Count - 1; i++)
             {
-                current = (RequestProp) bufferList.GetByIndex(i);
-                next = (RequestProp) bufferList.GetByIndex(i + 1);
-                if ((current.startPost + 1  + blockSize) == next.startPost)
+                current = (RequestProp)bufferList.GetByIndex(i);
+                next = (RequestProp)bufferList.GetByIndex(i + 1);
+                if ((current.startPost + 1 + blockSize) == next.startPost)
                     last = next.startPost;
             }
             return last;
