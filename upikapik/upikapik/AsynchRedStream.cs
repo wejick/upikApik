@@ -72,30 +72,29 @@ namespace upikapik
             startTimer.Change(0, 500);
             if (enable)
             {
-                if (enStream)
+                if(writeList.Count != MAX_REQUEST)
                 {
-                    if (!(isWriteQueueFull()))
+                    if (enStream)
                     {
                         if (failedRequestQueue.Count != 0)
                             startConnect(failedRequestQueue.Dequeue());
                         else if (starpostQueue.Count != 0)
                             startConnect(createRequest(filename, blocksize, filesize));
                     }
-                }
-                lock (writeBufferLocker)
-                {
-                    if (writeList.Count != 0)
-                        writeToFile();
-                    else if (writeQueue.Count == 0 && enStream == false)
+                    lock (writeBufferLocker)
                     {
-                        stopStream();
-                        startTimer.Dispose();
+                        if (writeList.Count != 0)
+                            writeToFile();
+                        else if (writeList.Count == 0 && enStream == false)
+                        {
+                            stopStream();
+                            startTimer.Dispose();
+                        }
+                        writeToBuffer();
                     }
-                    writeToBuffer();
                 }
             }
         }
-
         private void startConnect(RequestProp req)
         {
             req.client = new TcpClient();
@@ -319,14 +318,18 @@ namespace upikapik
             }
             return last;
         }
-        public bool isWriteQueueFull()
+        public int getLastValueOfBuffer()
         {
-            if (writeQueue.Count == MAX_REQUEST)
-                return true;
-            return false;
+            if(bufferList.Count != 0){
+                RequestProp tmp = (RequestProp)bufferList.GetByIndex(bufferList.Count - 1);
+                return tmp.startPost + blocksize;
+            }
+            return 0;
         }
         public void stopStream()
         {
+            writeList.Clear();
+            bufferList.Clear();
             enable = false;
         }
         public void writeToStream(IntPtr streamBuffer)
