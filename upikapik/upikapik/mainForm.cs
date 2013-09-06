@@ -5,6 +5,7 @@ using System.Net.Sockets;
 using System.IO;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using System.Configuration;
 
 namespace upikapik
 {
@@ -41,13 +42,18 @@ namespace upikapik
         int intervalTwo;
         
         // another HMR component
-        RedToHub _toHub = new RedToHub("RedDb.db4o", "192.168.0.33", 1337); // need to be esier to change
-        AsynchRedServ _server = new AsynchRedServ("192.168.0.7", 1338);// need to be esier to change
+        RedToHub _toHub;// = new RedToHub("RedDb.db4o", "192.168.0.33", 1337); // need to be esier to change
+        AsynchRedServ _server;// = new AsynchRedServ("192.168.0.7", 1338);// need to be esier to change
         System.Threading.Thread tRedServ;
         AsynchRedStream _redStream = new AsynchRedStream();
 
         public mainForm()
         {
+            string myIP = ConfigurationSettings.AppSettings["IP_HOST"].ToString();
+            string hubIP = ConfigurationSettings.AppSettings["IP_HUB"].ToString();
+            _toHub = new RedToHub("RedDb.db4o", hubIP, 1337);
+            _server = new AsynchRedServ(myIP, 1338);
+
             InitializeComponent();
             _opnFile = new OpenFileDialog();
             _player = new BassPlayer();
