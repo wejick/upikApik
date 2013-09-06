@@ -38,7 +38,8 @@ namespace upikapik
         Timer _timerPlayer;
         Timer _timerRed; // May can be if implemented in redToHub
         int intervalOne;
-
+        int intervalTwo;
+        
         // another HMR component
         RedToHub _toHub = new RedToHub("RedDb.db4o", "192.168.0.33", 1337); // need to be esier to change
         AsynchRedServ _server = new AsynchRedServ("192.168.0.7", 1338);// need to be esier to change
@@ -121,13 +122,14 @@ namespace upikapik
         private void onTimerPlayer(object source, EventArgs e)
         {
             intervalOne++;
+            intervalTwo++;
 
             _timeCurrent = _player.getPosSec();
             lblStatus.Text = "Time : " + s2t(_timeTotal) + " / " + s2t(_player.getPosSec());
 
-            lastStartpost = _redStream.getLastValueOfBuffer();
-            if (lastStartpost != 0)
+            if (!(_redStream.getLastValueOfBuffer() == 0))
             {
+                lastStartpost = _redStream.getLastValueOfBuffer();
                 barProgress.Value = (int)((float)lastStartpost / (float)_current_file.size * 100);
             }
             if (_timeCurrent != -1)
@@ -142,7 +144,14 @@ namespace upikapik
                     barSeek.SetRange(0, _timeTotal);
                 }
             }
-
+            if (intervalTwo == 40)
+            {
+                // update to HUB and file avail db
+                int available = lastStartpost/frame_size;
+                _toHub.updateFileInfo(_current_file.id_file, available);
+                _toHub.command("UN;"+_current_file.nama+";"+available);
+                intervalTwo = 0;
+            }
             //write to buffer
             if(!local)
                 _redStream.writeToStream(BufferHandler.AddrOfPinnedObject());
@@ -209,7 +218,7 @@ namespace upikapik
                 buffer = new byte[_current_file.size];
                 BufferHandler = GCHandle.Alloc(buffer, GCHandleType.Pinned);
 
-            }            
+            }
             //barProgress.Value = 0;
             this.Text = "UpikApik : " + _current_file.nama;
             barVol.Value = _player.getVolume();
