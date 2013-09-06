@@ -136,7 +136,7 @@ namespace upikapik
             if (!(_redStream.getLastValueOfBuffer() == 0))
             {
                 lastStartpost = _redStream.getLastValueOfBuffer();
-                barProgress.Value = (int)((float)lastStartpost / (float)_current_file.size * 100);
+                barProgress.Value = (int)(((float)lastStartpost + block_size) / (float)_current_file.size * 100);
             }
             if (_timeCurrent != -1)
                 barSeek.Value = _timeCurrent;
