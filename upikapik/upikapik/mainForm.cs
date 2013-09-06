@@ -6,6 +6,8 @@ using System.IO;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Configuration;
+using System.Collections;
+using System.Linq;
 
 namespace upikapik
 {
@@ -283,6 +285,34 @@ namespace upikapik
                 _redStream.stopStream();
                 _redStream.closeFile();
             }
+        }
+
+        private void btnTest_Click(object sender, EventArgs e)
+        {
+            int totalDelay = 0; // belum implement
+            int totalIgnored = _redStream.getTestIgnoredSession();
+            List<string> reqAndHost = _redStream.getTestRequestAndHost();
+            var q = from x in reqAndHost
+                    group x by x into g
+                    let count = g.Count()
+                    orderby count descending
+                    select new { Value = g.Key, Count = count };
+            string hostReport = "\n";
+            foreach (var item in q)
+            {
+                hostReport = hostReport + "\n" + item.Value + " : " + item.Count;
+            }
+
+            string message =
+                "File name  = " + _current_file.nama + "\n" +
+                "File size  = " + _current_file.size + " byte " + "\n" +
+                "Bitrate    = " + _current_file.bitrate + " Kbps" + "\n" +
+                "Samplerate = " + _current_file.samplerate + " KHz" + "\n" +
+                "============= " + "\n" +
+                "Total delay     = " + totalDelay + "\n" +
+                "Ignored Attempt = " + totalIgnored + "\n" +
+                "Host requested" + hostReport;
+            MessageBox.Show(message);
         }
 
     }

@@ -37,12 +37,12 @@
             this.barVol = new System.Windows.Forms.TrackBar();
             this.btnRefresh = new System.Windows.Forms.Button();
             this.checkShuffle = new System.Windows.Forms.CheckBox();
-            this.btnConnect = new System.Windows.Forms.Button();
             this.listPlay = new System.Windows.Forms.ListBox();
             this.lblStatus = new System.Windows.Forms.Label();
             this.lytMonitor = new System.Windows.Forms.TableLayoutPanel();
             this.barProgress = new System.Windows.Forms.ProgressBar();
             this.barSeek = new System.Windows.Forms.TrackBar();
+            this.btnTest = new System.Windows.Forms.Button();
             this.lytMain.SuspendLayout();
             this.lytFlow.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.barVol)).BeginInit();
@@ -77,7 +77,7 @@
             this.lytFlow.Controls.Add(this.barVol);
             this.lytFlow.Controls.Add(this.btnRefresh);
             this.lytFlow.Controls.Add(this.checkShuffle);
-            this.lytFlow.Controls.Add(this.btnConnect);
+            this.lytFlow.Controls.Add(this.btnTest);
             this.lytFlow.Dock = System.Windows.Forms.DockStyle.Fill;
             this.lytFlow.Location = new System.Drawing.Point(3, 70);
             this.lytFlow.MaximumSize = new System.Drawing.Size(0, 40);
@@ -146,16 +146,6 @@
             this.checkShuffle.UseVisualStyleBackColor = true;
             this.checkShuffle.CheckedChanged += new System.EventHandler(this.checkBox1_CheckedChanged);
             // 
-            // btnConnect
-            // 
-            this.btnConnect.Enabled = false;
-            this.btnConnect.Location = new System.Drawing.Point(447, 3);
-            this.btnConnect.Name = "btnConnect";
-            this.btnConnect.Size = new System.Drawing.Size(56, 23);
-            this.btnConnect.TabIndex = 4;
-            this.btnConnect.Text = "connect";
-            this.btnConnect.UseVisualStyleBackColor = true;
-            // 
             // listPlay
             // 
             this.listPlay.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -212,6 +202,16 @@
             this.barSeek.TickStyle = System.Windows.Forms.TickStyle.None;
             this.barSeek.Scroll += new System.EventHandler(this.barSeek_Scroll);
             // 
+            // btnTest
+            // 
+            this.btnTest.Location = new System.Drawing.Point(447, 3);
+            this.btnTest.Name = "btnTest";
+            this.btnTest.Size = new System.Drawing.Size(58, 23);
+            this.btnTest.TabIndex = 7;
+            this.btnTest.Text = "TestVal";
+            this.btnTest.UseVisualStyleBackColor = true;
+            this.btnTest.Click += new System.EventHandler(this.btnTest_Click);
+            // 
             // mainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -248,9 +248,9 @@
         private System.Windows.Forms.TrackBar barSeek;
         private System.Windows.Forms.TrackBar barVol;
         private System.Windows.Forms.CheckBox checkShuffle;
-        private System.Windows.Forms.Button btnConnect;
         private System.Windows.Forms.Button btnRefresh;
         private System.Windows.Forms.Button btnStop;
+        private System.Windows.Forms.Button btnTest;
     }
 }
 

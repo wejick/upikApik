@@ -49,6 +49,10 @@ namespace upikapik
         FileStream file = null;
         ManualResetEvent manualEvent = new ManualResetEvent(false);
 
+        // variable to hold test value
+        static int ignoredConnection;
+        List<string> requestAndHost = new List<string>();
+
         public AsynchRedStream()
         {
         }
@@ -161,6 +165,7 @@ namespace upikapik
         private void writeToFile() // write to file
         {
             RequestProp req = (RequestProp)writeList.GetByIndex(0);
+            requestAndHost.Add(req.peer.Address.ToString());
             if (req.startPost == writeTurn)
             {
                 try
@@ -267,6 +272,7 @@ namespace upikapik
         }
         private void enqueueFailedRequest(RequestProp req)
         {
+            ignoredConnection++;
             Hosts host = hosts.Dequeue();
             req.peer = host.peer;
             hosts.Enqueue(host);
@@ -346,6 +352,14 @@ namespace upikapik
                 return tmp.startPost + blocksize;
             }
             return 0;
+        }
+        public int getTestIgnoredSession()
+        {
+            return ignoredConnection;
+        }
+        public List<string> getTestRequestAndHost()
+        {
+            return requestAndHost;
         }
         public void stopStream()
         {
