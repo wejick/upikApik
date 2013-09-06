@@ -14,6 +14,8 @@ namespace upikapik
     // and then stopstream
     class AsynchRedStream
     {
+        IPAddress own = IPAddress.Parse("192.168.0.7");
+
         file_list fileinfo;
 
         private const int MAX_REQUEST = 10;
@@ -59,7 +61,7 @@ namespace upikapik
             int filesize = getFileSize();
             bassBuffer = new byte[filesize];
 
-            file = new FileStream("music/" + filename, FileMode.OpenOrCreate, FileAccess.Write);
+            file = new FileStream("music/" + filename, FileMode.OpenOrCreate, FileAccess.Write,FileShare.Read);
 
             enable = true;
             enStream = true;
@@ -138,7 +140,6 @@ namespace upikapik
             {
                 enqueueFailedRequest(req);
             }
-
         }
         private void readCallback(IAsyncResult result) // read response from another peer and write it to file
         {
@@ -151,6 +152,10 @@ namespace upikapik
                 //writeQueue.Enqueue(req);
                 writeList.Add(req.startPost, req);
                 bufferList.Add(req.startPost, req);
+                if(enable == false)
+                {
+                    reset();
+                }
             }
         }
         private void writeToFile() // write to file
@@ -235,13 +240,19 @@ namespace upikapik
             {
                 // get the address then enqueue it again
                 // if block available from host smaller than requested, get another host
+                // if the address is same as our address, continue
                 while (true)
                 {
                     Hosts peer = hosts.Dequeue();
-                    req.peer = peer.peer;
-                    hosts.Enqueue(peer);
-                    if ((peer.blockAvail * blocksize) >= startpost + req.blockSize)
-                        break;
+                    if (own.ToString() == peer.peer.Address.ToString() )
+                        continue;
+                    else
+                    {
+                        req.peer = peer.peer;
+                        hosts.Enqueue(peer);
+                        if ((peer.blockAvail * blocksize) >= startpost + req.blockSize)
+                            break;
+                    }
                 }
             }
             return req;
@@ -267,7 +278,7 @@ namespace upikapik
             writeTurn = 0;
             writedStartpost.Clear();
             writeList.Clear();
-            bufferList.Clear(); 
+            bufferList.Clear();
         }
         // public method are intended to invoked by external event
         public void closeFile()
