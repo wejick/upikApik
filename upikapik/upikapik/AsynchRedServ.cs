@@ -9,7 +9,7 @@ namespace upikapik
 {
     class AsynchRedServ : IDisposable
     {
-        private string FILE_DIR = "music/";
+        private string FILE_DIR = AppDomain.CurrentDomain.BaseDirectory + "music/";
         private const int MSG_LENGTH_BYTE = 100; //masih ngasal, panjang dari request message
         private int threadCount = 0;
         private TcpListener server;
@@ -108,9 +108,10 @@ namespace upikapik
             FileStream file = null;
             try
             {
-                file = new FileStream(FILE_DIR + filename, FileMode.Open, FileAccess.Read);
+                file = new FileStream(FILE_DIR + filename, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
                 file.Seek(startPost, 0);
                 file.Read(blocks, 0, size);
+                file.Close();
             }
             catch (FileLoadException ex)
             {

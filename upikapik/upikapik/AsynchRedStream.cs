@@ -61,7 +61,7 @@ namespace upikapik
             int filesize = getFileSize();
             bassBuffer = new byte[filesize];
 
-            file = new FileStream("music/" + filename, FileMode.OpenOrCreate, FileAccess.Write,FileShare.Read);
+            file = new FileStream(AppDomain.CurrentDomain.BaseDirectory + "music/" + filename, FileMode.OpenOrCreate, FileAccess.Write,FileShare.ReadWrite);
 
             enable = true;
             enStream = true;
