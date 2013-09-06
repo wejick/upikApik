@@ -236,8 +236,8 @@ namespace upikapik
                 bool find = false;
                 Hosts host = new Hosts();
                 foreach (IPAddress address in addr)
-                {                    
-                    if (address.Equals(item.ip))
+                {
+                    if (address.ToString() == item.ip.ToString())
                     {
                         find = true;
                     }
@@ -248,9 +248,7 @@ namespace upikapik
                 {
                     host.blockAvail = item.block_avail;
                     host.peer = new IPEndPoint(IPAddress.Parse(item.ip), 1338);
-
                     hosts.Enqueue(host);
-                    break;
                 }
             }
             return hosts;

@@ -249,12 +249,12 @@ namespace upikapik
                 while (true)
                 {
                     Hosts peer = hosts.Dequeue();
+                    hosts.Enqueue(peer);
                     if (own.ToString() == peer.peer.Address.ToString() )
                         continue;
                     else
                     {
-                        req.peer = peer.peer;
-                        hosts.Enqueue(peer);
+                        req.peer = peer.peer;                        
                         if ((peer.blockAvail * blocksize) >= startpost + req.blockSize)
                             break;
                     }
@@ -363,6 +363,7 @@ namespace upikapik
         }
         public void stopStream()
         {
+            ignoredConnection = 0;            
             enable = false;
             reset();
         }
