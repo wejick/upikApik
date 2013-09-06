@@ -223,8 +223,7 @@ namespace upikapik
             return id_file;
         }
         public Queue<Hosts> getAvailableHost(string nama)
-        {
-            Hosts host = new Hosts();
+        {            
             Queue<Hosts> hosts = new Queue<Hosts>();
 
             String strHostName = Dns.GetHostName();
@@ -234,21 +233,24 @@ namespace upikapik
             dynamic obj = from file_host_rel f in db where f.nama.Equals(nama) select f;
             foreach (var item in obj)
             {
+                bool find = false;
+                Hosts host = new Hosts();
                 foreach (IPAddress address in addr)
-                {
+                {                    
                     if (address.Equals(item.ip))
                     {
-                        break;
+                        find = true;
                     }
                     if (address.Equals(null))
                         break;
-                    else
-                    {
-                        host.blockAvail = item.block_avail;
-                        host.peer = new IPEndPoint(IPAddress.Parse(item.ip), 1338);
+                }
+                if(!find)
+                {
+                    host.blockAvail = item.block_avail;
+                    host.peer = new IPEndPoint(IPAddress.Parse(item.ip), 1338);
 
-                        hosts.Enqueue(host);
-                    }
+                    hosts.Enqueue(host);
+                    break;
                 }
             }
             return hosts;
@@ -256,24 +258,27 @@ namespace upikapik
         public void updateFileInfo(int id_file, int blockAvailable)
         {
             file_available file = new file_available();
+            file.id_file = 45;
+            file.nama = "Keren";
+            db.Store(file);
             dynamic f = from file_list g in db where g.id_file.Equals(id_file) select g;
             foreach (var item in f)
             {
-                db.Delete(item);
-
                 file.id_file = id_file;
                 file.nama = item.nama;
                 file.samplerate = item.samplerate;
                 file.bitrate = item.bitrate;
                 file.size = item.size;
+                file.block_avail = blockAvailable;
                 if (blockAvailable == item.size)
                 {
                     file.full = true;
                 }
                 else
                     file.full = false;
-                db.Store(item);
+                db.Store(file);
             }
+            dynamic t = from file_available g in db select g;
         }
         public int getBlockAvailableSize(string nama)
         {
