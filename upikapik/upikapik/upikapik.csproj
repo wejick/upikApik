@@ -59,7 +59,7 @@
     <GenerateManifests>true</GenerateManifests>
   </PropertyGroup>
   <PropertyGroup>
-    <SignManifests>true</SignManifests>
+    <SignManifests>false</SignManifests>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Bass.Net, Version=2.4.10.3, Culture=neutral, PublicKeyToken=b7566c273e6ef480, processorArchitecture=MSIL" />
