@@ -164,14 +164,14 @@ namespace upikapik
         }
         private void writeToFile() // write to file
         {
-            RequestProp req = (RequestProp)writeList.GetByIndex(0);
-            requestAndHost.Add(req.peer.Address.ToString());
+            RequestProp req = (RequestProp)writeList.GetByIndex(0);            
             if (req.startPost == writeTurn)
             {
                 try
                 {
                     lock (writeFileLocker)
                     {
+                        requestAndHost.Add(req.peer.Address.ToString());
                         if (req.startPost == 0)
                             file.Seek(req.startPost, SeekOrigin.Begin);
                         else
